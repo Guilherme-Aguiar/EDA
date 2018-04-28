@@ -6,7 +6,7 @@
 
 void selecionaImagens();
 int geraNumeroAleatorio();
-void alocaMatriz(int, int);
+void alocaMatriz(int, int, FILE *);
 
 int main() {
 
@@ -23,7 +23,8 @@ int main() {
 void selecionaImagens(){
   FILE *arq;
   int numeroAleatorio;
-  char nomeArquivo[20] = "grass/grass_", stringNumeroAleatorio[4];
+  char nomeArquivo[20],stringNumeroAleatorio[4];
+  strcat(nomeArquivo,"grass/grass_");
   numeroAleatorio = geraNumeroAleatorio();
   sprintf(stringNumeroAleatorio,"%02d",numeroAleatorio);
   strcat(nomeArquivo,stringNumeroAleatorio);
@@ -44,11 +45,27 @@ void selecionaImagens(){
       printf(".");
     }
   }
-  fclose(arq);
+  alocaMatriz(contLine-1,contCol/(contLine-1)+1,arq);
    printf("%d %d",contLine-1,contCol/(contLine-1)+1);
 }
 
 int geraNumeroAleatorio(){
   srand(time(NULL));
   return (rand() % 49) + 1;
+}
+
+void alocaMatriz(int linha, int coluna, FILE *arq){
+  int i, j, **matriz, pixel;
+  char aux;
+  rewind(arq);
+  matriz = (int**)malloc(linha*sizeof(int *));
+  for(i = 0; i<linha; i++)
+    *(matriz+i) = (int*)malloc(coluna*sizeof(int));
+
+  for(i = 0; i<linha; i++)
+    for(j = 0; j<coluna; j++){
+      fscanf(arq,"%d%c",&pixel,&aux);
+      matriz[i][j] = pixel;
+    }
+    printf("\n3 primeiros elementos: %d e %d e %d\n",matriz[0][0],matriz[0][1],matriz[0][2]);
 }
