@@ -4,61 +4,147 @@
 #include <time.h>
 #include <string.h>
 
-void ilbp(int **matriz,int contLine,int contCol,int *frequencia);
-void selecionaImagens(char *nomeArquivo,FILE *arq,int **matriz,int *contLine,int *contCol);
+void ilbp(int **matriz,int contLine,int contCol,int **caracteristicas,int cont);
+void selecionaImagens(int *asfalto,int *grama,char *nomeArquivo,FILE *arq,int **matriz,int *contLine,int *contCol,int seletor);
 int geraNumeroAleatorio();
 void completaMatriz(int linha, int coluna, FILE *arq,int **matriz);
-void fazIlbpQuadrante(int **matriz,int linha,int coluna,int *frequencia);
+void fazIlbpQuadrante(int **matriz,int linha,int coluna,int **caracteristicas,int cont);
 int AchaMenorValor(int *vetor,int menor,int cont);
 int fazBinParaDecimal(int *bin);
 void rotacionaVetor(int *vetor);
+void normalizaVetor(int *vetor,int tamVetor);
+void fazMedia(int **caracteristicas,int *mediaGrama,int *mediaAsfalto);
 
 int main() {
   FILE *arq;
   int **matriz;
-  int contLine=0,contCol=0,i,j,pixel;
-  int *frequencia;
+  int contLine,contCol,i,j,pixel,cont=0;
+  int **caracteristicas;
   char aux;
   char nomeArquivo[20]= "";
+  static int asfalto[50],grama[50];
+  int *mediaAsfalto,*mediaGrama;
 
-  frequencia = (int*)calloc(536,sizeof(int));
+  mediaAsfalto = (int*)calloc(536,sizeof(int));
 
-  selecionaImagens(nomeArquivo,arq,matriz,&contLine,&contCol);
+  mediaGrama = (int*)calloc(536,sizeof(int));
 
-  matriz = (int**)malloc(contLine*sizeof(int*));
-  for(i = 0; i<contLine; i++){
-    *(matriz+i) = (int*)malloc(contCol*sizeof(int));
+  caracteristicas = (int**)calloc(50,sizeof(int*));
+  for(i = 0; i<50; i++){
+    *(caracteristicas+i) = (int*)calloc(536,sizeof(int));
   }
 
-  arq = fopen(nomeArquivo,"r");
+  for (cont = 0; cont < 6; cont++) {
 
-  for(i = 0; i<contLine; i++)
-    for(j = 0; j<contCol; j++){
-      fscanf(arq,"%d%c",&pixel,&aux);
-      *(*(matriz+i)+j) = pixel;
+    contLine=0;
+    contCol=0;
+
+    selecionaImagens(asfalto,grama,nomeArquivo,arq,matriz,&contLine,&contCol,cont%2);
+
+    matriz = (int**)malloc(contLine*sizeof(int*));
+    for(i = 0; i<contLine; i++){
+      *(matriz+i) = (int*)malloc(contCol*sizeof(int));
     }
 
-  ilbp(matriz,contLine,contCol,frequencia);
+    arq = fopen(nomeArquivo,"r");
+    for(i = 0; i<contLine; i++)
+      for(j = 0; j<contCol; j++){
+        fscanf(arq,"%d%c",&pixel,&aux);
+        *(*(matriz+i)+j) = pixel;
+      }
 
-  for (i = 0; i < 536; i++) {
-    printf("%d %d\n",i,frequencia[i]);
+    ilbp(matriz,contLine,contCol,caracteristicas,cont);
+
+    fclose(arq);
+
+    for(i = 0; i<contLine; i++){
+      free(*(matriz+i));
+    }
+    free(matriz);
+
+    strcpy(nomeArquivo, "" );
+
   }
+
+  for (i = 0; i < 50; i++) {
+    normalizaVetor(*(caracteristicas+i),536);
+  }
+
+  fazMedia(caracteristicas,mediaGrama,mediaAsfalto);
+
+  for (cont = 0; cont < 50; cont++) {
+
+    contLine=0;
+    contCol=0;
+
+    selecionaImagens(asfalto,grama,nomeArquivo,arq,matriz,&contLine,&contCol,cont%2);
+
+    matriz = (int**)malloc(contLine*sizeof(int*));
+    for(i = 0; i<contLine; i++){
+      *(matriz+i) = (int*)malloc(contCol*sizeof(int));
+    }
+
+    arq = fopen(nomeArquivo,"r");
+    for(i = 0; i<contLine; i++)
+      for(j = 0; j<contCol; j++){
+        fscanf(arq,"%d%c",&pixel,&aux);
+        *(*(matriz+i)+j) = pixel;
+    }
+
+    ilbp(matriz,contLine,contCol,caracteristicas,cont);
+
+    fclose(arq);
+
+    for(i = 0; i<contLine; i++){
+      free(*(matriz+i));
+    }
+    free(matriz);
+
+    strcpy(nomeArquivo, "" );
+  }
+
+    for (i = 0; i < 50; i++) {
+      normalizaVetor(*(caracteristicas+i),536);
+    }
+
+//    fazEuclidiana(caracteristicas,mediaAsfalto,mediaGrama);
+
+
+
+
+
+  for(i = 0; i<50; i++){
+    free(*(caracteristicas+i));
+  }
+  free(caracteristicas);
+
+  free(mediaGrama);
+
+  free(mediaAsfalto);
 
   return 0;
 }
-
-
-// int someInt = 368;
-// char str[12];
-// sprintf(str, "%d", someInt);
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void selecionaImagens(char *nomeArquivo,FILE *arq,int **matriz,int *contLine,int *contCol){
+void selecionaImagens(int *asfalto,int *grama,char *nomeArquivo,FILE *arq,int **matriz,int *contLine,int *contCol,int seletor){
   int numeroAleatorio;
   char stringNumeroAleatorio[4];
   int pixel;
   char aux;
-  strcat(nomeArquivo,"grass/grass_");
-  numeroAleatorio = geraNumeroAleatorio();
+  if (seletor) {
+    strcat(nomeArquivo,"grass/grass_");
+    numeroAleatorio = geraNumeroAleatorio();
+    while(grama[numeroAleatorio-1]) {
+      numeroAleatorio = geraNumeroAleatorio();
+    }
+    grama[numeroAleatorio-1] = 1;
+  } else {
+    strcat(nomeArquivo,"asphalt/asphalt_");
+    numeroAleatorio = geraNumeroAleatorio();
+    while(asfalto[numeroAleatorio-1]) {
+      numeroAleatorio = geraNumeroAleatorio();
+    }
+    asfalto[numeroAleatorio-1] = 1;
+  }
   sprintf(stringNumeroAleatorio,"%02d",numeroAleatorio);
   strcat(nomeArquivo,stringNumeroAleatorio);
   strcat(nomeArquivo,".txt");
@@ -97,16 +183,16 @@ void completaMatriz(int linha, int coluna, FILE *arq,int **matriz){
     printf("\n3 primeiros elementos: %d e %d e %d\n",matriz[0][0],matriz[0][1],matriz[0][2]);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ilbp(int **matriz,int contLine,int contCol,int *frequencia){
+void ilbp(int **matriz,int contLine,int contCol,int **caracteristicas,int cont){
   int i,j;
   for(i = 1; i < contLine-1; i++) {
     for (j = 1; j < contCol-1; j++) {
-      fazIlbpQuadrante(matriz,i,j,frequencia);
+      fazIlbpQuadrante(matriz,i,j,caracteristicas,cont);
     }
   }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void fazIlbpQuadrante(int **matriz,int linha,int coluna,int *frequencia){
+void fazIlbpQuadrante(int **matriz,int linha,int coluna,int **caracteristicas,int aux){
   float total=0.0;
   int cont=0,menorValor;
   int vetor[9];
@@ -125,10 +211,11 @@ void fazIlbpQuadrante(int **matriz,int linha,int coluna,int *frequencia){
     }
   }
   menorValor = AchaMenorValor(vetor,255,0);
-  if (menorValor == 1) {
-    printf("foda-se\n");
+  if (aux%2) {
+    caracteristicas[(aux-1)/2][menorValor]++;
+  } else {
+    caracteristicas[25+aux/2][menorValor]++;
   }
-  frequencia[menorValor]++;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int AchaMenorValor(int *vetor,int menor,int cont){
@@ -162,4 +249,41 @@ void rotacionaVetor(int *vetor){
     vetor[i] = aux;
     aux = aux1;
   }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void normalizaVetor(int *vetor,int tamVetor){
+
+  int maior=0,menor=255,i;
+  for (i = 0; i < tamVetor; i++) {
+    if (vetor[i] < menor) {
+      menor = vetor[i];
+    }else if(vetor[i] > maior){
+      maior = vetor[i];
+    }
+  }
+  if (maior == menor) {
+    return;
+  }
+  for (i = 0; i < tamVetor; i++) {
+    vetor[i] = (vetor[i] - menor)/(maior - menor);
+  }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void fazMedia(int **caracteristicas,int *mediaGrama,int *mediaAsfalto){
+
+  int i,j,total=0;
+
+  for (j = 0; j < 536; j++) {
+    for (i = 0; i < 25; i++) {
+      total+= caracteristicas[i][j];
+    }
+    mediaGrama[j] = total/25;
+    total = 0;
+    for (; i < 50; i++) {
+      total+= caracteristicas[i][j];
+    }
+    mediaAsfalto[j] = total/25;
+    total = 0;
+  }
+
 }
