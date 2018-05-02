@@ -83,10 +83,14 @@ int main() {
 
   fazMedia(caracteristicas,mediaGrama,mediaAsfalto);
 
-  for (i = 0; i < IMAGENS; i++) {
-    for (j = 0; j < TAMVET; j++) {
-      caracteristicas[i][j] = 0.0;
-    }
+  for(i = 0; i<IMAGENS; i++){
+    free(*(caracteristicas+i));
+  }
+  free(caracteristicas);
+
+  caracteristicas = (float**)calloc(IMAGENS,sizeof(float*));
+  for(i = 0; i<IMAGENS; i++){
+    *(caracteristicas+i) = (float*)calloc(TAMVET,sizeof(float));
   }
 
   for (cont = 0; cont < IMAGENS; cont++) {
@@ -285,7 +289,7 @@ void fazMedia(float **caracteristicas,float *mediaGrama,float *mediaAsfalto){
     }
     mediaGrama[j] = total/(IMAGENS/2);
     total = 0.0;
-    for (; i < IMAGENS; i++) {
+    for (i = IMAGENS/2; i < IMAGENS; i++) {
       total+= caracteristicas[i][j];
     }
     mediaAsfalto[j] = total/(IMAGENS/2);
