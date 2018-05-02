@@ -4,37 +4,40 @@
 #include <time.h>
 #include <string.h>
 
-void ilbp(int **matriz,int contLine,int contCol,int **caracteristicas,int cont);
+#define IMAGENS 10
+#define TAMVET 536
+
+void ilbp(int **matriz,int contLine,int contCol,float **caracteristicas,int cont);
 void selecionaImagens(int *asfalto,int *grama,char *nomeArquivo,FILE *arq,int **matriz,int *contLine,int *contCol,int seletor);
 int geraNumeroAleatorio();
-void completaMatriz(int linha, int coluna, FILE *arq,int **matriz);
-void fazIlbpQuadrante(int **matriz,int linha,int coluna,int **caracteristicas,int cont);
+void fazIlbpQuadrante(int **matriz,int linha,int coluna,float **caracteristicas,int cont);
 int AchaMenorValor(int *vetor,int menor,int cont);
 int fazBinParaDecimal(int *bin);
 void rotacionaVetor(int *vetor);
-void normalizaVetor(int *vetor,int tamVetor);
-void fazMedia(int **caracteristicas,int *mediaGrama,int *mediaAsfalto);
+void normalizaVetor(float *vetor,int tamVetor);
+void fazMedia(float **caracteristicas,float *mediaGrama,float *mediaAsfalto);
+void fazEuclidiana(float **caracteristicas,float *mediaAsfalto,float *mediaGrama,int *taxaAcerto,int *taxaFalsaAceitacao,int *taxaFalsaRejeicao);
 
 int main() {
   FILE *arq;
   int **matriz;
-  int contLine,contCol,i,j,pixel,cont=0;
-  int **caracteristicas;
+  int contLine,contCol,i,j,pixel,cont=0,taxaAcerto=0,taxaFalsaRejeicao=0,taxaFalsaAceitacao=0;
+  float **caracteristicas;
   char aux;
   char nomeArquivo[20]= "";
-  static int asfalto[50],grama[50];
-  int *mediaAsfalto,*mediaGrama;
+  static int asfalto[IMAGENS],grama[IMAGENS];
+  float *mediaAsfalto,*mediaGrama;
 
-  mediaAsfalto = (int*)calloc(536,sizeof(int));
+  mediaAsfalto = (float*)calloc(TAMVET,sizeof(float));
 
-  mediaGrama = (int*)calloc(536,sizeof(int));
+  mediaGrama = (float*)calloc(TAMVET,sizeof(float));
 
-  caracteristicas = (int**)calloc(50,sizeof(int*));
-  for(i = 0; i<50; i++){
-    *(caracteristicas+i) = (int*)calloc(536,sizeof(int));
+  caracteristicas = (float**)calloc(IMAGENS,sizeof(float*));
+  for(i = 0; i<IMAGENS; i++){
+    *(caracteristicas+i) = (float*)calloc(TAMVET,sizeof(float));
   }
 
-  for (cont = 0; cont < 6; cont++) {
+  for (cont = 0; cont < IMAGENS; cont++) {
 
     contLine=0;
     contCol=0;
@@ -66,13 +69,13 @@ int main() {
 
   }
 
-  for (i = 0; i < 50; i++) {
-    normalizaVetor(*(caracteristicas+i),536);
+  for (i = 0; i < IMAGENS; i++) {
+    normalizaVetor(*(caracteristicas+i),TAMVET);
   }
 
   fazMedia(caracteristicas,mediaGrama,mediaAsfalto);
 
-  for (cont = 0; cont < 50; cont++) {
+  for (cont = 0; cont < IMAGENS; cont++) {
 
     contLine=0;
     contCol=0;
@@ -103,17 +106,25 @@ int main() {
     strcpy(nomeArquivo, "" );
   }
 
-    for (i = 0; i < 50; i++) {
-      normalizaVetor(*(caracteristicas+i),536);
+    for (i = 0; i < IMAGENS; i++) {
+      normalizaVetor(*(caracteristicas+i),TAMVET);
     }
 
-//    fazEuclidiana(caracteristicas,mediaAsfalto,mediaGrama);
+    for (i = 0; i < IMAGENS; i++) {
+      for (j = 0; j < TAMVET; j++) {
+        printf("%.2f",caracteristicas[i][j]);
+      }
+      printf("\n");
+    }
+
+    fazEuclidiana(caracteristicas,mediaAsfalto,mediaGrama,&taxaAcerto,&taxaFalsaAceitacao,&taxaFalsaRejeicao);
+
+    printf("Taxa de acerto: %d%%\n",taxaAcerto*100/IMAGENS);
+    printf("Taxa de falsa aceitação: %d%%\n",taxaFalsaAceitacao*100/IMAGENS);
+    printf("Taxa de falsa rejeição: %d%%\n",taxaFalsaRejeicao*100/IMAGENS);
 
 
-
-
-
-  for(i = 0; i<50; i++){
+  for(i = 0; i<IMAGENS; i++){
     free(*(caracteristicas+i));
   }
   free(caracteristicas);
@@ -167,23 +178,10 @@ void selecionaImagens(int *asfalto,int *grama,char *nomeArquivo,FILE *arq,int **
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int geraNumeroAleatorio(){
   srand(time(NULL));
-  return (rand() % 49) + 1;
+  return (rand() % (IMAGENS)) + 1;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void completaMatriz(int linha, int coluna, FILE *arq,int **matriz){
-  int i, j, pixel;
-  char aux;
-  rewind(arq);
-  for(i = 0; i<linha; i++)
-    for(j = 0; j<coluna; j++){
-      fscanf(arq,"%d%c",&pixel,&aux);
-      matriz[i][j] = pixel;
-
-    }
-    printf("\n3 primeiros elementos: %d e %d e %d\n",matriz[0][0],matriz[0][1],matriz[0][2]);
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ilbp(int **matriz,int contLine,int contCol,int **caracteristicas,int cont){
+void ilbp(int **matriz,int contLine,int contCol,float **caracteristicas,int cont){
   int i,j;
   for(i = 1; i < contLine-1; i++) {
     for (j = 1; j < contCol-1; j++) {
@@ -192,7 +190,7 @@ void ilbp(int **matriz,int contLine,int contCol,int **caracteristicas,int cont){
   }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void fazIlbpQuadrante(int **matriz,int linha,int coluna,int **caracteristicas,int aux){
+void fazIlbpQuadrante(int **matriz,int linha,int coluna,float **caracteristicas,int aux){
   float total=0.0;
   int cont=0,menorValor;
   int vetor[9];
@@ -214,7 +212,7 @@ void fazIlbpQuadrante(int **matriz,int linha,int coluna,int **caracteristicas,in
   if (aux%2) {
     caracteristicas[(aux-1)/2][menorValor]++;
   } else {
-    caracteristicas[25+aux/2][menorValor]++;
+    caracteristicas[IMAGENS/2+aux/2][menorValor]++;
   }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -251,7 +249,7 @@ void rotacionaVetor(int *vetor){
   }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void normalizaVetor(int *vetor,int tamVetor){
+void normalizaVetor(float *vetor,int tamVetor){
 
   int maior=0,menor=255,i;
   for (i = 0; i < tamVetor; i++) {
@@ -269,21 +267,53 @@ void normalizaVetor(int *vetor,int tamVetor){
   }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void fazMedia(int **caracteristicas,int *mediaGrama,int *mediaAsfalto){
+void fazMedia(float **caracteristicas,float *mediaGrama,float *mediaAsfalto){
 
-  int i,j,total=0;
+  int i,j;
+  float total=0.0;
 
-  for (j = 0; j < 536; j++) {
-    for (i = 0; i < 25; i++) {
+  for (j = 0; j < TAMVET; j++) {
+    for (i = 0; i < IMAGENS/2; i++) {
       total+= caracteristicas[i][j];
     }
-    mediaGrama[j] = total/25;
-    total = 0;
-    for (; i < 50; i++) {
+    mediaGrama[j] = total/(IMAGENS/2);
+    total = 0.0;
+    for (; i < IMAGENS; i++) {
       total+= caracteristicas[i][j];
     }
-    mediaAsfalto[j] = total/25;
-    total = 0;
+    mediaAsfalto[j] = total/(IMAGENS/2);
+    total = 0.0;
+  }
+
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void fazEuclidiana(float **caracteristicas,float *mediaAsfalto,float *mediaGrama,int *taxaAcerto,int *taxaFalsaAceitacao,int *taxaFalsaRejeicao){
+  float total = 0.0,distEuclidGrama,distEuclidAsfalto;
+  int i,j;
+  for (i = 0; i < IMAGENS; i++) {
+    for (j = 0; j < TAMVET; j++) {
+      total+= pow(caracteristicas[i][j] - mediaGrama[j],2);
+    }
+    distEuclidGrama = sqrt(total);
+    total = 0.0;
+    for (j = 0; j < TAMVET; j++) {
+      total+= pow(caracteristicas[i][j] - mediaAsfalto[j],2);
+    }
+    distEuclidAsfalto = sqrt(total);
+    total = 0.0;
+    if (i < IMAGENS/2) {
+      if (distEuclidGrama < distEuclidAsfalto) {
+        *taxaAcerto += 1;
+      } else {
+        *taxaFalsaRejeicao += 1;
+      }
+    } else{
+      if (distEuclidGrama > distEuclidAsfalto) {
+        *taxaAcerto += 1;
+      } else {
+        *taxaFalsaAceitacao += 1;
+      }
+    }
   }
 
 }
