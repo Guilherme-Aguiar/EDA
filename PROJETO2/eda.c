@@ -4,7 +4,7 @@
 #include <time.h>
 #include <string.h>
 
-#define IMAGENS 4
+#define IMAGENS 50
 #define TAMCOD 256
 #define TAMVET 536
 
@@ -22,6 +22,7 @@ void glcm(int **matriz,int linha,int coluna,float **caracteristicas,int cont);
 int calculaEnergia(int **matriz);
 float calculaHomogeneidade(int **matriz);
 int calculaContraste(int **matriz);
+void selecionaImagensTreino(int *asfalto,int *grama,char *nomeArquivo,FILE *arq,int **matriz,int *contLine,int *contCol,int seletor);
 
 int main() {
   FILE *arq;
@@ -82,12 +83,18 @@ int main() {
 
   fazMedia(caracteristicas,mediaGrama,mediaAsfalto);
 
+  for (i = 0; i < IMAGENS; i++) {
+    for (j = 0; j < TAMVET; j++) {
+      caracteristicas[i][j] = 0.0;
+    }
+  }
+
   for (cont = 0; cont < IMAGENS; cont++) {
 
     contLine=0;
     contCol=0;
 
-    selecionaImagens(asfalto,grama,nomeArquivo,arq,matriz,&contLine,&contCol,cont%2);
+    selecionaImagensTreino(asfalto,grama,nomeArquivo,arq,matriz,&contLine,&contCol,cont%2);
 
     matriz = (int**)malloc(contLine*sizeof(int*));
     for(i = 0; i<contLine; i++){
@@ -114,23 +121,15 @@ int main() {
     strcpy(nomeArquivo, "" );
   }
 
-    for (i = 0; i < IMAGENS; i++) {
-      normalizaVetor(*(caracteristicas+i),TAMVET);
-    }
+  for (i = 0; i < IMAGENS; i++) {
+    normalizaVetor(*(caracteristicas+i),TAMVET);
+  }
 
-    for (i = 0; i < IMAGENS; i++) {
-      for (j = 0; j < TAMVET; j++) {
-        printf("%.2f",caracteristicas[i][j]);
-      }
-      printf("\n");
-    }
+  fazEuclidiana(caracteristicas,mediaAsfalto,mediaGrama,&taxaAcerto,&taxaFalsaAceitacao,&taxaFalsaRejeicao);
 
-    fazEuclidiana(caracteristicas,mediaAsfalto,mediaGrama,&taxaAcerto,&taxaFalsaAceitacao,&taxaFalsaRejeicao);
-
-    printf("Taxa de acerto: %d%%\n",taxaAcerto*100/IMAGENS);
-    printf("Taxa de falsa aceitação: %d%%\n",taxaFalsaAceitacao*100/IMAGENS);
-    printf("Taxa de falsa rejeição: %d%%\n",taxaFalsaRejeicao*100/IMAGENS);
-
+  printf("Taxa de acerto: %d%%\n",taxaAcerto*100/IMAGENS);
+  printf("Taxa de falsa aceitação: %d%%\n",taxaFalsaAceitacao*100/IMAGENS);
+  printf("Taxa de falsa rejeição: %d%%\n",taxaFalsaRejeicao*100/IMAGENS);
 
   for(i = 0; i<IMAGENS; i++){
     free(*(caracteristicas+i));
@@ -218,9 +217,9 @@ void fazIlbpQuadrante(int **matriz,int linha,int coluna,float **caracteristicas,
   }
   menorValor = AchaMenorValor(vetor,TAMCOD,0);
   if (aux%2) {
-    caracteristicas[(aux-1)/2][menorValor]++;
+    caracteristicas[(aux-1)/2][menorValor]+=1;
   } else {
-    caracteristicas[IMAGENS/2+aux/2][menorValor]++;
+    caracteristicas[IMAGENS/2+aux/2][menorValor]+=1;
   }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -259,7 +258,7 @@ void rotacionaVetor(int *vetor){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void normalizaVetor(float *vetor,int tamVetor){
 
-  int maior=0,menor=TAMCOD-1,i;
+  int maior=0,menor=10000,i;
   for (i = 0; i < tamVetor; i++) {
     if (vetor[i] < menor) {
       menor = vetor[i];
@@ -327,10 +326,9 @@ void fazEuclidiana(float **caracteristicas,float *mediaAsfalto,float *mediaGrama
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void glcm(int **matriz,int linha,int coluna,float **caracteristicas,int cont){
   int ***matrizesGlcm;
-  int i,j,t,a,b;
+  int i,j,t;
 
   matrizesGlcm = (int***)calloc(8,sizeof(int**));
-
 	for (i = 0; i < 8; i++) {
 		matrizesGlcm[i] = (int**)calloc(TAMCOD,sizeof(int*));
 		for (j = 0; j < TAMCOD; j++) {
@@ -339,75 +337,54 @@ void glcm(int **matriz,int linha,int coluna,float **caracteristicas,int cont){
 	}
 
   for (t = 0; t < 8; t++) {
-    printf("t %d\n",t );
-    for (i = 0; i < TAMCOD; i++) {
-      printf("i %d\n",i );
-      for (j = 0; j < TAMCOD; j++) {
-        printf("j %d\n",j );
-        for (a = 1; a < linha-1; a++) {
-          printf("a %d\n",a );
-          for (b = 1; b < coluna-1; b++) {
-            printf("b %d\n",b );
-            if (matriz[a][b] == i) {
-              switch (t) {
-                case 0:
-                  if(matriz[a-1][b-1] == j){
-                    matrizesGlcm[t][i][j]++;
-                  }
-                  break;
-                case 1:
-                  if(matriz[a-1][b] == j){
-                    matrizesGlcm[t][i][j]++;
-                  }
-                  break;
-                case 2:
-                  if (matriz[a-1][b+1] == j) {
-                    matrizesGlcm[t][i][j]++;
-                  }
-                  break;
-                case 3:
-                  if (matriz[a][b-1] == j) {
-                    matrizesGlcm[t][i][j]++;
-                  }
-                  break;
-                case 4:
-                  if (matriz[a][b+1] == j) {
-                    matrizesGlcm[t][i][j]++;
-                  }
-                  break;
-                case 5:
-                  if (matriz[a+1][b-1] == j) {
-                    matrizesGlcm[t][i][j]++;
-                  }
-                  break;
-                case 6:
-                  if (matriz[a+1][b] == j) {
-                    matrizesGlcm[t][i][j]++;
-                  }
-                  break;
-                case 7:
-                  if (matriz[a+1][b+1] == j) {
-                    matrizesGlcm[t][i][j]++;
-                  }
-              }
-            }
-          }
+    for (i = 1; i < linha-1; i++) {
+      for (j = 1; j < coluna-1; j++) {
+        switch (t) {
+          case 0:
+            matrizesGlcm[t][matriz[i][j]][matriz[i-1][j-1]]++;
+            break;
+          case 1:
+            matrizesGlcm[t][matriz[i][j]][matriz[i-1][j]]++;
+            break;
+          case 2:
+            matrizesGlcm[t][matriz[i][j]][matriz[i-1][j+1]]++;
+            break;
+          case 3:
+            matrizesGlcm[t][matriz[i][j]][matriz[i][j-1]]++;
+            break;
+          case 4:
+            matrizesGlcm[t][matriz[i][j]][matriz[i][j+1]]++;
+            break;
+          case 5:
+            matrizesGlcm[t][matriz[i][j]][matriz[i+1][j-1]]++;
+            break;
+          case 6:
+            matrizesGlcm[t][matriz[i][j]][matriz[i+1][j]]++;
+            break;
+          case 7:
+            matrizesGlcm[t][matriz[i][j]][matriz[i+1][j+1]]++;
         }
       }
     }
     if (cont%2) {
       caracteristicas[(cont-1)/2][512+3*t] = calculaEnergia(matrizesGlcm[t]);
-      printf("energia %.2f\n",caracteristicas[(cont-1)/2][512+3*t]);
       caracteristicas[(cont-1)/2][512+3*t+1] = calculaHomogeneidade(matrizesGlcm[t]);
-      printf("homoge %.2f\n",caracteristicas[(cont-1)/2][512+3*t+1]);
       caracteristicas[(cont-1)/2][512+3*t+2] = calculaContraste(matrizesGlcm[t]);
-      printf("contraste %.2f\n",caracteristicas[(cont-1)/2][512+3*t+2]);
     } else {
       caracteristicas[IMAGENS/2+cont/2][512+3*t] = calculaEnergia(matrizesGlcm[t]);
       caracteristicas[IMAGENS/2+cont/2][512+3*t+1] = calculaHomogeneidade(matrizesGlcm[t]);
       caracteristicas[IMAGENS/2+cont/2][512+3*t+2] = calculaContraste(matrizesGlcm[t]);
     }
   }
+
+  for (i = 0; i < 8; i++) {
+    for (j = 0; j < TAMCOD; j++) {
+      free(matrizesGlcm[i][j]);
+    }
+    free(matrizesGlcm[i]);
+  }
+  free(matrizesGlcm);
+
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int calculaContraste(int **matriz){
@@ -439,4 +416,44 @@ int calculaEnergia(int **matriz){
     }
   }
   return total;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void selecionaImagensTreino(int *asfalto,int *grama,char *nomeArquivo,FILE *arq,int **matriz,int *contLine,int *contCol,int seletor){
+  int cont=0,numeroAleatorio;
+  char stringNumeroAleatorio[4];
+  int pixel;
+  char aux;
+  if (seletor) {
+    strcat(nomeArquivo,"grass/grass_");
+    while(grama[cont]) {
+      cont++;
+    }
+    numeroAleatorio = cont+1;
+    grama[cont] = 1;
+  } else {
+    strcat(nomeArquivo,"asphalt/asphalt_");
+    while(asfalto[cont]) {
+      cont++;
+    }
+    numeroAleatorio = cont+1;
+    asfalto[cont] = 1;
+  }
+  sprintf(stringNumeroAleatorio,"%02d",numeroAleatorio);
+  strcat(nomeArquivo,stringNumeroAleatorio);
+  strcat(nomeArquivo,".txt");
+  printf("%s\n",nomeArquivo);
+  arq = fopen(nomeArquivo,"r");
+  while(!feof(arq)){
+    fscanf(arq, "%d%c",&pixel,&aux);
+    if(aux == ';'){
+      *contCol += 1;
+    }
+    else if(aux == '\n'){
+      *contLine += 1;
+    }
+  }
+  *contLine -= 1;
+  *contCol = *contCol/(*contLine)+1;
+  printf("%d %d\n",*contLine,*contCol);
+  fclose(arq);
 }
