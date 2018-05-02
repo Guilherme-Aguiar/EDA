@@ -4,7 +4,8 @@
 #include <time.h>
 #include <string.h>
 
-#define IMAGENS 10
+#define IMAGENS 4
+#define TAMCOD 256
 #define TAMVET 536
 
 void ilbp(int **matriz,int contLine,int contCol,float **caracteristicas,int cont);
@@ -17,6 +18,10 @@ void rotacionaVetor(int *vetor);
 void normalizaVetor(float *vetor,int tamVetor);
 void fazMedia(float **caracteristicas,float *mediaGrama,float *mediaAsfalto);
 void fazEuclidiana(float **caracteristicas,float *mediaAsfalto,float *mediaGrama,int *taxaAcerto,int *taxaFalsaAceitacao,int *taxaFalsaRejeicao);
+void glcm(int **matriz,int linha,int coluna,float **caracteristicas,int cont);
+int calculaEnergia(int **matriz);
+float calculaHomogeneidade(int **matriz);
+int calculaContraste(int **matriz);
 
 int main() {
   FILE *arq;
@@ -57,6 +62,8 @@ int main() {
       }
 
     ilbp(matriz,contLine,contCol,caracteristicas,cont);
+    glcm(matriz,contLine,contCol,caracteristicas,cont);
+
 
     fclose(arq);
 
@@ -95,6 +102,7 @@ int main() {
     }
 
     ilbp(matriz,contLine,contCol,caracteristicas,cont);
+    glcm(matriz,contLine,contCol,caracteristicas,cont);
 
     fclose(arq);
 
@@ -208,7 +216,7 @@ void fazIlbpQuadrante(int **matriz,int linha,int coluna,float **caracteristicas,
       vetor[i] = 0;
     }
   }
-  menorValor = AchaMenorValor(vetor,255,0);
+  menorValor = AchaMenorValor(vetor,TAMCOD,0);
   if (aux%2) {
     caracteristicas[(aux-1)/2][menorValor]++;
   } else {
@@ -251,7 +259,7 @@ void rotacionaVetor(int *vetor){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void normalizaVetor(float *vetor,int tamVetor){
 
-  int maior=0,menor=255,i;
+  int maior=0,menor=TAMCOD-1,i;
   for (i = 0; i < tamVetor; i++) {
     if (vetor[i] < menor) {
       menor = vetor[i];
@@ -315,5 +323,120 @@ void fazEuclidiana(float **caracteristicas,float *mediaAsfalto,float *mediaGrama
       }
     }
   }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void glcm(int **matriz,int linha,int coluna,float **caracteristicas,int cont){
+  int ***matrizesGlcm;
+  int i,j,t,a,b;
 
+  matrizesGlcm = (int***)calloc(8,sizeof(int**));
+
+	for (i = 0; i < 8; i++) {
+		matrizesGlcm[i] = (int**)calloc(TAMCOD,sizeof(int*));
+		for (j = 0; j < TAMCOD; j++) {
+			matrizesGlcm[i][j] = (int*)calloc(TAMCOD,sizeof(int));
+		}
+	}
+
+  for (t = 0; t < 8; t++) {
+    printf("t %d\n",t );
+    for (i = 0; i < TAMCOD; i++) {
+      printf("i %d\n",i );
+      for (j = 0; j < TAMCOD; j++) {
+        printf("j %d\n",j );
+        for (a = 1; a < linha-1; a++) {
+          printf("a %d\n",a );
+          for (b = 1; b < coluna-1; b++) {
+            printf("b %d\n",b );
+            if (matriz[a][b] == i) {
+              switch (t) {
+                case 0:
+                  if(matriz[a-1][b-1] == j){
+                    matrizesGlcm[t][i][j]++;
+                  }
+                  break;
+                case 1:
+                  if(matriz[a-1][b] == j){
+                    matrizesGlcm[t][i][j]++;
+                  }
+                  break;
+                case 2:
+                  if (matriz[a-1][b+1] == j) {
+                    matrizesGlcm[t][i][j]++;
+                  }
+                  break;
+                case 3:
+                  if (matriz[a][b-1] == j) {
+                    matrizesGlcm[t][i][j]++;
+                  }
+                  break;
+                case 4:
+                  if (matriz[a][b+1] == j) {
+                    matrizesGlcm[t][i][j]++;
+                  }
+                  break;
+                case 5:
+                  if (matriz[a+1][b-1] == j) {
+                    matrizesGlcm[t][i][j]++;
+                  }
+                  break;
+                case 6:
+                  if (matriz[a+1][b] == j) {
+                    matrizesGlcm[t][i][j]++;
+                  }
+                  break;
+                case 7:
+                  if (matriz[a+1][b+1] == j) {
+                    matrizesGlcm[t][i][j]++;
+                  }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (cont%2) {
+      caracteristicas[(cont-1)/2][512+3*t] = calculaEnergia(matrizesGlcm[t]);
+      printf("energia %.2f\n",caracteristicas[(cont-1)/2][512+3*t]);
+      caracteristicas[(cont-1)/2][512+3*t+1] = calculaHomogeneidade(matrizesGlcm[t]);
+      printf("homoge %.2f\n",caracteristicas[(cont-1)/2][512+3*t+1]);
+      caracteristicas[(cont-1)/2][512+3*t+2] = calculaContraste(matrizesGlcm[t]);
+      printf("contraste %.2f\n",caracteristicas[(cont-1)/2][512+3*t+2]);
+    } else {
+      caracteristicas[IMAGENS/2+cont/2][512+3*t] = calculaEnergia(matrizesGlcm[t]);
+      caracteristicas[IMAGENS/2+cont/2][512+3*t+1] = calculaHomogeneidade(matrizesGlcm[t]);
+      caracteristicas[IMAGENS/2+cont/2][512+3*t+2] = calculaContraste(matrizesGlcm[t]);
+    }
+  }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int calculaContraste(int **matriz){
+  int i,j,total=0;
+  for (i = 0; i < TAMCOD; i++) {
+    for (j = 0; j < TAMCOD; j++) {
+      total += matriz[i][j]*pow(i-j,2);
+    }
+  }
+  return total;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+float calculaHomogeneidade(int **matriz){
+  int i,j;
+  float total=0.0;
+  for (i = 0; i < TAMCOD; i++) {
+    for (j = 0; j < TAMCOD; j++) {
+      total += matriz[i][j]/(1+abs(i-j));
+    }
+  }
+  return total;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int calculaEnergia(int **matriz){
+  int i,j,total=0;
+  for (i = 0; i < TAMCOD; i++) {
+    for (j = 0; j < TAMCOD; j++) {
+      total += pow(matriz[i][j],2);
+    }
+  }
+  return total;
 }
