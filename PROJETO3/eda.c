@@ -159,8 +159,6 @@ void visualizarTodosRegistros(Contato *lista){
     printf("%s\n",aux->endereco);
     printf("%u\n",aux->cep);
     printf("%s\n",aux->nascimento);
-    //printf("%s\n",aux->ant->nome);
-    printf("%s\n",aux->prox->nome);
     printf("\n");
   }
 }
@@ -232,9 +230,6 @@ Contato *insertSort(Contato *lista,Contato *termo){
   Contato *aux;
 
   for (aux = lista; aux != NULL; aux = aux->prox) {
-    printf("termo %s\n",termo->nome );
-    printf("aux %s\n",aux->nome );
-    printf("%d\n",strcmp(aux->nome,termo->nome) );
     if(strcmp(aux->nome,termo->nome) > 0){
       termo->prox = aux;
       termo->ant = aux->ant;
@@ -244,26 +239,12 @@ Contato *insertSort(Contato *lista,Contato *termo){
       }else{
         lista = termo;
       }
-      printf("aux %s\n",aux->nome);
-      printf("%s\n",aux->celular);
-      printf("%s\n",aux->endereco);
-      printf("%u\n",aux->cep);
-      printf("%s\n",aux->nascimento);
-      //printf("%s\n",aux->ant->nome);
-      printf("%s\n\n",aux->prox->nome);
       return lista;
     }
     if(aux->prox == NULL){
       termo->prox = NULL;
       termo->ant = aux;
       aux->prox = termo;
-      printf("aux %s\n",aux->nome);
-      printf("%s\n",aux->celular);
-      printf("%s\n",aux->endereco);
-      printf("%u\n",aux->cep);
-      printf("%s\n",aux->nascimento);
-      //printf("%s\n",aux->ant->nome);
-      printf("%s\n\n",aux->prox->nome);
       return lista;
     }
   }
