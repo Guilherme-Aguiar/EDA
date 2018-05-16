@@ -21,9 +21,9 @@ typedef struct contato{
 
 void mostraMenu();
 Contato *inserirRegistro(Contato *lista);
-void removerRegistros(Contato *lista,char nome[]);
+Contato *removerRegistros(Contato *lista,char nome[]);
 void visualizarRegistroNome(Contato *lista,char nome[]);
-void visualizarTodosRegistros(Contato *lista);
+void visualizarTodosRegistros(Contato *lista,char modo);
 void salvaLista(Contato *lista);
 Contato *carregaArquivoNaLista();
 Contato *insertSort(Contato *lista,Contato *termo);
@@ -32,7 +32,7 @@ void continuar();
 
 int main() {
 
-  char select,c,nome[TAMNOME];
+  char select,c,modo,nome[TAMNOME];
   FILE *arq;
   Contato *lista;
 
@@ -62,7 +62,7 @@ int main() {
         printf("digite o nome que deseja retirar dos contatos:\n");
         scanf("%[^\n]",nome);
         getchar();
-        removerRegistros(lista,nome);
+        lista = removerRegistros(lista,nome);
         strcpy(nome,"");
         continuar();
         break;
@@ -77,7 +77,16 @@ int main() {
         break;
       case '4':
         system("clear");
-        visualizarTodosRegistros(lista);
+        do{
+          printf("digite o modo que deseja visualizar os contatos:\n");
+          printf("1 - ordem crescente\n");
+          printf("2 - ordem decrescente\n");
+          scanf("%c",&modo);
+          do {
+            c = getchar();
+          } while(c != '\n');
+        }while(modo < '1' || modo > '2');
+        visualizarTodosRegistros(lista,modo);
         continuar();
         break;
       case '0':
@@ -98,37 +107,50 @@ void mostraMenu(){
   printf("\n");
   printf("\t1 - Inserir novo registro\n\n");
   printf("\t2 - Remover registros que possuem o nome indicado\n\n");
-  printf("\t3 - Visualizar registro a partir do nome indicado\n\n");
+  printf("\t3 - Visualizar registros que possuem o nome indicado\n\n");
   printf("\t4 - Visualizar todos os registros em ordem alfabética de nomes\n\n");
   printf("\t0 - Sair\n\n");
 
 }
 ////////////////////////////////////////////////////////////////////////////////
-void removerRegistros(Contato *lista,char nome[]){
+Contato *removerRegistros(Contato *lista,char nome[]){
   Contato *aux,*aux1;
+  int cont=0;
 
   for(aux = lista;aux != NULL;aux = aux->prox){
     if (!strcasecmp(aux->nome,nome)) {
-        if (aux->prox == NULL & aux->ant == NULL) {
-          free(aux);
-        }else if(aux->prox == NULL){
-          aux1= aux->ant;
-          free(aux);
-          aux1->prox = NULL;
-        }else if(aux->ant == NULL){
-          lista = aux->prox;
-          lista->ant = NULL;
-          free(aux);
-          aux = lista;
-        }else{
-          aux1 = aux->ant;
-          aux1->prox = aux->prox;
-          aux1 = aux->prox;
-          aux1->ant = aux->ant;
-          free(aux);
-        }
+      printf("\ncontato removido:\n");
+      printf("%s\n",aux->nome);
+      printf("%s\n",aux->celular);
+      printf("%s\n",aux->endereco);
+      printf("%u\n",aux->cep);
+      printf("%s\n",aux->nascimento);
+      printf("\n");
+      if (aux->prox == NULL & aux->ant == NULL) {
+        free(aux);
+      }else if(aux->prox == NULL){
+        aux1= aux->ant;
+        free(aux);
+        aux1->prox = NULL;
+      }else if(aux->ant == NULL){
+        lista = aux->prox;
+        lista->ant = NULL;
+        free(aux);
+        aux = lista;
+      }else{
+        aux1 = aux->ant;
+        aux1->prox = aux->prox;
+        aux1 = aux->prox;
+        aux1->ant = aux->ant;
+        free(aux);
+      }
+      cont++;
     }
   }
+  if (!cont) {
+    printf("\nnome não encontrado.\n");
+  }
+  return lista;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void visualizarRegistroNome(Contato *lista,char nome[]){
@@ -137,7 +159,7 @@ void visualizarRegistroNome(Contato *lista,char nome[]){
 
   for(aux = lista;aux != NULL;aux = aux->prox){
     if(!strcasecmp(aux->nome,nome)){
-      printf("%s\n",aux->nome);
+      printf("\n%s\n",aux->nome);
       printf("%s\n",aux->celular);
       printf("%s\n",aux->endereco);
       printf("%u\n",aux->cep);
@@ -151,16 +173,28 @@ void visualizarRegistroNome(Contato *lista,char nome[]){
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void visualizarTodosRegistros(Contato *lista){
+void visualizarTodosRegistros(Contato *lista,char modo){
   Contato *aux;
-
-  for(aux = lista;aux != NULL;aux = aux->prox){
-    printf("%s\n",aux->nome);
-    printf("%s\n",aux->celular);
-    printf("%s\n",aux->endereco);
-    printf("%u\n",aux->cep);
-    printf("%s\n",aux->nascimento);
-    printf("\n");
+  if (modo == '1') {
+    for(aux = lista;aux != NULL;aux = aux->prox){
+      printf("%s\n",aux->nome);
+      printf("%s\n",aux->celular);
+      printf("%s\n",aux->endereco);
+      printf("%u\n",aux->cep);
+      printf("%s\n",aux->nascimento);
+      printf("\n");
+    }
+  } else {
+    for(aux = lista;aux->prox != NULL;aux = aux->prox){
+    }
+    for (;aux != NULL;aux = aux->ant) {
+      printf("%s\n",aux->nome);
+      printf("%s\n",aux->celular);
+      printf("%s\n",aux->endereco);
+      printf("%u\n",aux->cep);
+      printf("%s\n",aux->nascimento);
+      printf("\n");
+    }
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
