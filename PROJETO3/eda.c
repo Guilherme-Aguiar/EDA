@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <string.h>
 
 #define TAMNOME 101
@@ -26,7 +27,7 @@ void visualizarTodosRegistros(Contato *lista);
 void salvaLista(Contato *lista);
 Contato *carregaArquivoNaLista();
 Contato *insertSort(Contato *lista,Contato *termo);
-void validaCelular(char celular[]);
+int validaCelular(char celular[]);
 void continuar();
 
 int main() {
@@ -107,7 +108,7 @@ void removerRegistros(Contato *lista,char nome[]){
   Contato *aux,*aux1;
 
   for(aux = lista;aux != NULL;aux = aux->prox){
-    if (!strcmp(aux->nome,nome)) {
+    if (!strcasecmp(aux->nome,nome)) {
         if (aux->prox == NULL & aux->ant == NULL) {
           free(aux);
         }else if(aux->prox == NULL){
@@ -135,7 +136,7 @@ void visualizarRegistroNome(Contato *lista,char nome[]){
   long long int cont=0;
 
   for(aux = lista;aux != NULL;aux = aux->prox){
-    if(!strcmp(aux->nome,nome)){
+    if(!strcasecmp(aux->nome,nome)){
       printf("%s\n",aux->nome);
       printf("%s\n",aux->celular);
       printf("%s\n",aux->endereco);
@@ -230,7 +231,7 @@ Contato *insertSort(Contato *lista,Contato *termo){
   Contato *aux;
 
   for (aux = lista; aux != NULL; aux = aux->prox) {
-    if(strcmp(aux->nome,termo->nome) > 0){
+    if(strcasecmp(aux->nome,termo->nome) > 0){
       termo->prox = aux;
       termo->ant = aux->ant;
       aux->ant = termo;
@@ -250,8 +251,27 @@ Contato *insertSort(Contato *lista,Contato *termo){
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void validaCelular(char celular[]){
-
+int validaCelular(char celular[]){
+  int aux;
+  if(strlen(celular) != 10){
+    puts("Número Invalido! Digite Novamente:");
+    return 0;
+  }
+  else{
+    for(aux = 0; aux <10; aux++){
+      if(!isdigit(celular[aux]) && aux !=5){
+        puts("Número Invalido! Digite Novamente:");
+        return 0;
+      }
+      if(aux == 5){
+        if(celular[aux] != '-'){
+          puts("Número Invalido! Digite Novamente:");
+          return 0;
+        }
+      }
+    }
+  }
+  return 1;
 }
 ////////////////////////////////////////////////////////////////////////////////
 Contato *inserirRegistro(Contato *lista){
@@ -266,10 +286,11 @@ Contato *inserirRegistro(Contato *lista){
   printf("Digite o nome do novo contato:\n");
   scanf("%[^\n]",novo->nome);
   getchar();
-  printf("Digite o celular do novo contato:\n");
-  scanf("%[^\n]",novo->celular);
-  getchar();
-  validaCelular(novo->celular);
+  do{
+    printf("Digite o celular do novo contato:\n");
+    scanf("%[^\n]",novo->celular);
+    getchar();
+  }while(!validaCelular(novo->celular));
   printf("Digite o endereço do novo contato:\n");
   scanf("%[^\n]",novo->endereco);
   getchar();
