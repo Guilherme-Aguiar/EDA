@@ -36,11 +36,6 @@ int main() {
   FILE *arq;
   Contato *lista;
 
-
-  if(lista = (Contato*)malloc(sizeof(Contato)),lista == NULL){
-    printf("alocação falhou!\n");
-  }
-
   lista = carregaArquivoNaLista();
 
   do {
@@ -86,6 +81,7 @@ int main() {
             c = getchar();
           } while(c != '\n');
         }while(modo < '1' || modo > '2');
+        system("clear");
         visualizarTodosRegistros(lista,modo);
         continuar();
         break;
@@ -127,7 +123,8 @@ Contato *removerRegistros(Contato *lista,char nome[]){
       printf("%s\n",aux->nascimento);
       printf("\n");
       if (aux->prox == NULL & aux->ant == NULL) {
-        free(aux);
+        free(lista);
+        return NULL;
       }else if(aux->prox == NULL){
         aux1= aux->ant;
         free(aux);
@@ -157,7 +154,7 @@ void visualizarRegistroNome(Contato *lista,char nome[]){
   Contato *aux;
   long long int cont=0;
 
-  for(aux = lista;aux != NULL;aux = aux->prox){
+  for(aux = lista;aux != NULL && lista != NULL;aux = aux->prox){
     if(!strcasecmp(aux->nome,nome)){
       printf("\n%s\n",aux->nome);
       printf("%s\n",aux->celular);
@@ -176,7 +173,7 @@ void visualizarRegistroNome(Contato *lista,char nome[]){
 void visualizarTodosRegistros(Contato *lista,char modo){
   Contato *aux;
   if (modo == '1') {
-    for(aux = lista;aux != NULL;aux = aux->prox){
+    for(aux = lista;aux != NULL && lista != NULL;aux = aux->prox){
       printf("%s\n",aux->nome);
       printf("%s\n",aux->celular);
       printf("%s\n",aux->endereco);
@@ -185,7 +182,7 @@ void visualizarTodosRegistros(Contato *lista,char modo){
       printf("\n");
     }
   } else {
-    for(aux = lista;aux->prox != NULL;aux = aux->prox){
+    for(aux = lista;aux->prox != NULL && lista != NULL;aux = aux->prox){
     }
     for (;aux != NULL;aux = aux->ant) {
       printf("%s\n",aux->nome);
@@ -219,9 +216,11 @@ void salvaLista(Contato *lista){
     if (aux != lista) {
       free(aux->ant);
     }
+    if(aux->prox == NULL){
+      free(aux);
+    }
   }
 
-  free(aux);
   fclose(arq);
 
 }
@@ -242,6 +241,9 @@ Contato *carregaArquivoNaLista(){
     }
 
     fscanf(arq,"%[^\n]\n%s\n%[^\n]\n%u\n%s\n%c\n",contatos->nome,contatos->celular,contatos->endereco,&contatos->cep,contatos->nascimento,&cifrao);
+    if (!strcasecmp(contatos->nome,"")) {
+      return NULL;
+    }
     contatos->ant = NULL;
     contatos->prox = NULL;
     primeiro = contatos;
@@ -264,6 +266,12 @@ Contato *carregaArquivoNaLista(){
 Contato *insertSort(Contato *lista,Contato *termo){
   Contato *aux;
 
+  if (lista == NULL) {
+    lista = termo;
+    termo->ant = NULL;
+    termo->prox = NULL;
+    return lista;
+  }
   for (aux = lista; aux != NULL; aux = aux->prox) {
     if(strcasecmp(aux->nome,termo->nome) > 0){
       termo->prox = aux;
