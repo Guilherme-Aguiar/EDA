@@ -25,7 +25,7 @@ typedef struct fila {
 
 
 int geraNumeroAproxDecol();
-char geraTipoDeVoo();
+char geraTipoDeVoo(int *auxDeco,int *auxAprox,int nAproximacoes,int nDecolagens);
 int geraNumeroComb();
 
 void eventos(Fila *,int,int*,char cod[64][6]);
@@ -41,7 +41,7 @@ Lista *retira_fim(Lista*);
 Fila *cria();
 void fila_insere_emergencia(Fila*, int, char, int);
 void fila_insere_inicio(Fila*,int);
-void fila_insere_fim(Fila*,int);
+void fila_insere_fim(Fila*,int,int *auxDeco,int *auxAprox,int nAproximacoes,int nDecolagens);
 Info fila_retira_inicio(Fila*);
 Info fila_retira_fim(Fila*);
 void imprime(Fila*);
@@ -64,6 +64,8 @@ int main(int argc, char ** argv){
 													"TT1020", "AZ1098", "BA2312", "VG3030", "BA2304", "KL5609","KL5610",
 													"KL5611"};
 	int nVoos,nAproximacoes,nDecolagens,combA,aux,tempo = 1000;
+	int auxAprox=0;
+	int auxDeco=0;
 	Lista *l;
 	Fila *f,*auxiliar;
 	srand(time(NULL));
@@ -72,10 +74,10 @@ int main(int argc, char ** argv){
 	nDecolagens=geraNumeroAproxDecol();
 	nVoos = nAproximacoes + nDecolagens;
 	for(aux = 0; aux < nVoos; aux++){
-		fila_insere_fim(f,aux+1);
+		fila_insere_fim(f,aux+1,&auxDeco,&auxAprox,nAproximacoes,nDecolagens);
 	}
 	puts("-----------------------------------------------------");
-	puts("Aeroporto Internacional do Tártaro");
+	puts("Aeroporto Internacional de Brasília");
 	puts("Hora Inicial: 10:00");
 	puts("Fila de Pedidos:[código do voo – P/D – 	prioridade]");
 	printf("NVoos: %d\n",nVoos);
@@ -84,6 +86,7 @@ int main(int argc, char ** argv){
 	puts("-----------------------------------------------------");
 	eventos(f,nVoos,&tempo,codVoos);
 	free(f);
+	printf("%d %d\n",auxDeco,auxAprox);
 	return 0;
 }
 
@@ -92,13 +95,23 @@ int geraNumeroAproxDecol(){
   return 10+(rand() % (22)) + 1;
 }
 /////////////////////////////////////////////////////////////////////
-char geraTipoDeVoo(){
+char geraTipoDeVoo(int *auxDeco,int *auxAprox,int nAproximacoes,int nDecolagens){
 	int n;
   n = rand() % (2);
-	if(n == 0){
+	if (*auxAprox == nAproximacoes) {
+		*auxDeco += 1;
+		return 'D';
+	}
+	if (*auxDeco == nDecolagens) {
+		*auxAprox += 1;
 		return 'A';
 	}
-	else if(n == 1){
+	if(n == 0){
+		*auxAprox += 1;
+		return 'A';
+	}
+	if(n == 1){
+		*auxDeco += 1;
 		return 'D';
 	}
 }
@@ -162,10 +175,10 @@ void fila_insere_inicio (Fila* f, int n) {
       f->fim = f->ini;
 }
 /////////////////////////////////////////////////////////////////////
-void fila_insere_fim (Fila* f,int n) {
+void fila_insere_fim (Fila* f,int n,int *auxDeco,int *auxAprox,int nAproximacoes,int nDecolagens) {
 	 Info *i = (Info*)calloc(1,sizeof(Info));
 	 i->id = n;
-	 i->tipo = geraTipoDeVoo();
+	 i->tipo = geraTipoDeVoo(auxDeco,auxAprox,nAproximacoes,nDecolagens);
 	 if(i->tipo == 'A'){
 		 i->combustivel = geraNumeroComb();
 	 }
@@ -217,7 +230,7 @@ void eventos(Fila* f, int nVoos, int *tempo, char cod[64][6]){
 	int tempoPistas[3] = {0,0,0};
 	int pistaAtual, contadorDaMorte = 0;
 	int combZeroInicial=0;
-	char codigo[7];
+	char codigo[7],strTempo[5];
 	combZeroInicial = busca_total(f);
 	for(int aux = 0; aux < combZeroInicial; aux++){
 		f = retira(f);
@@ -329,8 +342,11 @@ void eventos(Fila* f, int nVoos, int *tempo, char cod[64][6]){
 						tempoPistas[2] += 10;
 					}
 				}
+				strcpy(strTempo,"");
+				snprintf(strTempo,5, "%d",*tempo);
 
-				printf("Horário do início do procedimento: %d\n",*tempo);
+
+				printf("Horário do início do procedimento: %c%c:%c%c\n",strTempo[0],strTempo[1],strTempo[2],strTempo[3]);
 				printf("Pista: %d\n\n\n",pistaAtual);
 
 				fila_retira_inicio(f);
