@@ -229,7 +229,7 @@ void eventos(Fila* f, int nVoos, int *tempo, char cod[64][6]){
 			for(int j = 0; j < 6; j++){
 				codigo[j] = cod[i][j];
 			}
-			printf("Código do Voo: %s/ %d\n",codigo,f->ini->info.id);
+			printf("Código do Voo: %s\n",codigo);
 			printf("Status: explodiu\n\n");
 			fila_retira_inicio(f);
 		}
@@ -301,14 +301,14 @@ void eventos(Fila* f, int nVoos, int *tempo, char cod[64][6]){
 				for(int j = 0; j < 6; j++){
 					codigo[j] = cod[i][j];
 				}
-				printf("Código do Voo: %s/ %d\n",codigo,f->ini->info.id);
+				printf("Código do Voo: %s\n",codigo);
 				printf("Status: explodiu\n\n");
 				fila_retira_inicio(f);
 			}else {
 				for(int j = 0; j < 6; j++){
 					codigo[j] = cod[i][j];
 				}
-				printf("Código do Voo: %s/ %d\n",codigo,f->ini->info.id);
+				printf("Código do Voo: %s\n",codigo);
 				if(f->ini->info.tipo == 'A'){
 					printf("Status: Aeronave Pousou\n");
 					if(pistaAtual == 1){
