@@ -28,7 +28,8 @@ int geraNumeroAproxDecol();
 char geraTipoDeVoo();
 int geraNumeroComb();
 
-void eventos(Fila *,int);
+void eventos(Fila *,int,int*,char cod[64][6]);
+void pista(Fila *,int,int,char cod[64][6],int,int pista[3]);
 
 Lista *insere_inicio(Lista*,Info*);
 Lista *insere_fim(Lista*,Info*);
@@ -37,12 +38,14 @@ Lista *retira_fim(Lista*);
 
 
 Fila *cria();
+void fila_insere_emergencia(Fila*, int, char, int);
 void fila_insere_inicio(Fila*,int);
 void fila_insere_fim(Fila*,int);
 Info fila_retira_inicio(Fila*);
 Info fila_retira_fim(Fila*);
 void imprime(Fila*);
 Lista *busca(Fila*);
+int busca_total(Fila*);
 Fila *retira(Fila *);
 int vazia(Fila*);
 
@@ -59,9 +62,9 @@ int main(int argc, char ** argv){
 													"LF0978", "RL7867", "TT4502", "GL7645", "LF0932", "JJ4434", "TG1510",
 													"TT1020", "AZ1098", "BA2312", "VG3030", "BA2304", "KL5609","KL5610",
 													"KL5611"};
-	int nVoos,nAproximacoes,nDecolagens,combA,aux;
+	int nVoos,nAproximacoes,nDecolagens,combA,aux,tempo = 1000;
 	Lista *l;
-	Fila *f;
+	Fila *f,*auxiliar;
 	srand(time(NULL));
 	f = cria();
 	nAproximacoes=geraNumeroAproxDecol();
@@ -71,11 +74,9 @@ int main(int argc, char ** argv){
 	for(aux = 0; aux < nVoos; aux++){
 		fila_insere_fim(f,aux+1);
 	}
-	imprime(f);
-	retira(f);
-	puts(" ");
-	puts("................");
-	imprime(f);
+
+
+	eventos(f,nVoos,&tempo,codVoos);
 	return 0;
 }
 
@@ -204,34 +205,102 @@ int vazia (Fila* f)
    return (f->ini==NULL);
 }
 /////////////////////////////////////////////////////////////////////
-void eventos(Fila* f, int nVoos){
+void eventos(Fila* f, int nVoos, int *tempo, char cod[64][6]){
+	int pistas[3] = {0,0,0};
+	int combZeroInicial=0;
+	char codigo[7];
+	combZeroInicial = busca_total(f);
+	for(int aux = 0; aux < combZeroInicial; aux++){
+		f = retira(f);
+	}
+	imprime(f);
+	puts("||||||||||||||||||||||||||||||||||||||||||||||");
 	for(int i = 0; i < nVoos; i ++){
+		for(int j = 0; j < 6; j++){
+			codigo[j] = cod[i][j];
+		}
+		printf("Código do Voo: %s\n",codigo);
+		if(f->ini->info.tipo == 'A'){
+			printf("Status: Aeronave Pousou\n");
+			*tempo += 20;
+		}
+		else{
+			printf("Status: Aeronave Decolou\n");
+			*tempo+=10;
+		}
 
+		printf("Horário do início do procedimento: %d\n",*tempo);
+		printf("Pista: %d\n",(i%3)+1);
+		f->ini->info = fila_retira_inicio(f);
+	}
+	printf("\n\n%d",*tempo);
+}
+/////////////////////////////////////////////////////////////////////
+void pista(Fila* f, int tempo, int tipo, char cod[64][6], int n,int pista[3]){
+	char codigo[7];
+	for(int i = 0; i < 6; i++){
+		codigo[i] = cod[n][i];
+	}
+	printf("Código do Voo: %s\n",codigo);
+	if(tipo == 'A'){
+		printf("Status: Aeronave Pousou\n");
+		tempo += 20;
+	}
+	else{
+		printf("Status: Aeronave Decolou\n");
+		tempo+=10;
 	}
 
-
+	printf("Horário do início do procedimento: %d\n",tempo);
+	printf("Pista: %d\n",(n%3)+1);
+	f->ini->info = fila_retira_inicio(f);
 }
 /////////////////////////////////////////////////////////////////////
 Lista* busca(Fila *f){
 	Lista *q;
-	for(q=f->ini; q!=NULL; q=q->prox)
+	for(q=f->fim; q!=NULL; q=q->ant)
 		if(q->info.tipo == 'A')
 			if(q->info.combustivel == 0)
 				return q;
 	return NULL;
 }
-
+/////////////////////////////////////////////////////////////////////
+int busca_total(Fila *f){
+	Lista *q;
+	int total=0;
+	for(q=f->fim; q!=NULL; q=q->ant)
+		if(q->info.tipo == 'A')
+			if(q->info.combustivel == 0)
+				total++;
+	return total;
+}
+/////////////////////////////////////////////////////////////////////
 Fila* retira(Fila *f){
+
+
 	Lista *q = busca(f);
-	if(q == NULL)
+	if(q == NULL){
 		return f;
+	}
 	/* retira elemento do encadeamento */
-	if (f == q)
-		f = q->prox;
+	if (f->ini == q)
+		f->ini = q->prox;
 	else
 		 q->ant->prox = q->prox;
 	if (q->prox != NULL)
 		q->prox->ant = q->ant;
+
+	fila_insere_emergencia(f,q->info.id,q->info.tipo,q->info.combustivel);
 	free(q);
 	return f;
+}
+/////////////////////////////////////////////////////////////////////
+void fila_insere_emergencia(Fila* f, int id, char tipo, int combustivel){
+	Info *i = (Info*)calloc(1,sizeof(Info));
+	i->id = id;
+	i->tipo = tipo;
+	i->combustivel = combustivel;
+	f->ini = insere_inicio(f->ini,i);
+	if (f->fim==NULL)  /* fila antes vazia? */
+		 f->fim = f->ini;
 }
