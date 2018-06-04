@@ -184,7 +184,7 @@ void visualizarTodosRegistros(Contato *lista,char modo){
   } else {
     for(aux = lista;aux->prox != NULL && lista != NULL;aux = aux->prox){
     }
-    for (;aux != NULL;aux = aux->ant) {
+    for (;aux != NULL && lista != NULL;aux = aux->ant) {
       printf("%s\n",aux->nome);
       printf("%s\n",aux->celular);
       printf("%s\n",aux->endereco);

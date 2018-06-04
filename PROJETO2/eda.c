@@ -486,7 +486,6 @@ void selecionaImagensTreino(int *asfalto,int *grama,char *nomeArquivo,FILE *arq,
   sprintf(stringNumeroAleatorio,"%02d",numeroAleatorio);
   strcat(nomeArquivo,stringNumeroAleatorio);
   strcat(nomeArquivo,".txt");
-  printf("%s\n",nomeArquivo);
   if(arq = fopen(nomeArquivo,"r"),arq == NULL){
     printf("erro ao abrir o arquivo!\n");
     exit(1);
@@ -502,6 +501,5 @@ void selecionaImagensTreino(int *asfalto,int *grama,char *nomeArquivo,FILE *arq,
   }
   *contLine -= 1;
   *contCol = *contCol/(*contLine)+1;
-  printf("%d %d\n",*contLine,*contCol);
   fclose(arq);
 }
