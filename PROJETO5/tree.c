@@ -21,14 +21,16 @@ No *loadTreeFromFile(char arquivo[])
   int value;
   No *aux;
   No *raiz = NULL;
-  if(arq = fopen(arquivo,"r+"),arq == NULL)
+  printf("arq %s\n",arquivo );
+  if(arq = fopen(arquivo,"a+"),arq == NULL)
   {
     printf("erro ao abrir o arquivo!\n");
     exit(1);
   }
   if (!feof(arq))
   {
-    fscanf(arq,"%d ",&value);
+    fscanf(arq," %d",&value);
+    printf("hop %d\n",value );
     if(raiz = (No*)malloc(sizeof(No)),raiz == NULL)
     {
       printf("alocação falhou!\n");
@@ -40,6 +42,7 @@ No *loadTreeFromFile(char arquivo[])
   while(!feof(arq))
   {
     fscanf(arq,"%d ",&value);
+    printf("%d\n",value );
     if(aux = (No*)malloc(sizeof(No)),aux == NULL)
     {
       printf("alocação falhou!\n");
@@ -53,7 +56,7 @@ No *loadTreeFromFile(char arquivo[])
   return raiz;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void insereNo(raiz,aux)
+void insereNo(No *raiz,No *aux)
 {
   if (raiz->value < aux->value)
   {
@@ -131,7 +134,7 @@ No *balanceTree(No *raiz)
      filho = raiz;
      do
      {
-       setaFamilaEsq(avo,pai,filho);
+       setaFamiliaEsq(avo,pai,filho);
        rotacionaEsquerda(avo,pai,filho);
        raiz = avo;
      } while(verificaBalanceamento(raiz));
@@ -212,8 +215,12 @@ void setaFamiliaDir(No *avo,No *pai,No *filho)
 void removeValue(No *raiz,int value)
 {
   No *pai;
-  while (raiz->value != value || raiz == NULL)
+  while (raiz == NULL)
   {
+    if (raiz->value != value)
+    {
+      break;
+    }
     pai = raiz;
     if (raiz->value < value)
     {
@@ -231,7 +238,6 @@ void removeValue(No *raiz,int value)
   else
   {
     verificaValor(raiz,pai);
-    free(sucessor);
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +252,6 @@ void procuraSucessor(No *raiz)
     }
     raiz->value = sucessor->value;
     verificaValor(sucessor,pai);
-    free(sucessor);
 }
 ////////////////////////////////////////////////////////////////////////////////
 int getHeight(No *raiz)
@@ -298,20 +303,25 @@ void printInOrder(No *raiz)
 void searchValue(No *raiz,int value)
 {
   int nivel = 0;
-  No *pai,*irmao;
-  while (raiz->value != value || raiz == NULL)
+  No *pai=NULL,*irmao=NULL;
+  while (raiz != NULL)
   {
+    if (raiz->value == value)
+    {
+      break;
+    }
+    printf("raiz %d  %d\n",raiz->value,value);
     nivel++;
     pai = raiz;
     if (raiz->value < value)
     {
       irmao = raiz->esq;
-      raiz = raiz->dir;
+      raiz = pai->dir;
     }
     else
     {
       irmao = raiz->dir;
-      raiz = raiz->esq;
+      raiz = pai->esq;
     }
   }
   if (raiz == NULL)
@@ -321,7 +331,10 @@ void searchValue(No *raiz,int value)
   else
   {
     printf("Nivel : %d\n",nivel);
-    printf("Pai : %d\n",pai->value);
+    if (pai != NULL)
+    {
+      printf("Pai : %d\n",pai->value);
+    }
     if (irmao != NULL)
     {
       printf("Irmão : %d\n",irmao->value);
@@ -351,9 +364,10 @@ void verificaValor(No *raiz,No *pai)
 {
   if (raiz->dir != NULL || raiz->esq != NULL)
   {
-    {
     if (raiz->dir != NULL && raiz->esq != NULL)
+    {
       procuraSucessor(raiz);
+      free(raiz);
     }
     else
     {
@@ -362,10 +376,12 @@ void verificaValor(No *raiz,No *pai)
         if (pai->dir == raiz)
         {
           pai->dir = raiz->esq;
+          free(raiz);
         }
         else
         {
           pai->esq = raiz->esq;
+          free(raiz);
         }
       }
       else
@@ -373,10 +389,12 @@ void verificaValor(No *raiz,No *pai)
         if (pai->dir == raiz)
         {
           pai->dir = raiz->dir;
+          free(raiz);
         }
         else
         {
           pai->esq = raiz->dir;
+          free(raiz);
         }
       }
     }

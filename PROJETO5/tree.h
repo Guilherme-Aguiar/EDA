@@ -8,7 +8,7 @@ typedef struct no {
 } No;
 
 No *loadTreeFromFile(char arquivo[]);
-void showTree(No *raiz);
+// void showTree(No *raiz);
 void isFull(No *raiz);
 void searchValue(No *raiz,int value);
 int getHeight(No *raiz);
