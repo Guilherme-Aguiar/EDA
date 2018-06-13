@@ -1,6 +1,0 @@
-bst1.txt
-bst2.txt
-bst3.txt
-bst4.txt
-bst5.txt
-bst6.txt

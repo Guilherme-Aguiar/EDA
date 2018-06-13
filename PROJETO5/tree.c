@@ -4,7 +4,6 @@
  // No *loadTreeFromFile(char arquivo[]);
  // void showTree(No *raiz);
  // int isFull(No *raiz);
- // void searchValue(No *raiz,int value);
  // No *removeValue(No *raiz,int value);
  // No *balanceTree(No *raiz);
 
@@ -56,56 +55,36 @@ int getHeight(No *raiz)
    }
  }
 ////////////////////////////////////////////////////////////////////////////////
-//
-// int searchValue(No *raiz,int value)
-// {
-//   if(raiz != NULL)
-//   {
-//     if (raiz->value == value)
-//     {
-//       printf("Nível : 1\n");
-//     }
-//     else
-//     {
-//       if (raiz->value < value)
-//       {
-//         if (raiz->esq->value == value)
-//         {
-//           printf("Pai : %d\n",raiz->value);
-//           if (raiz->dir != NULL)
-//           {
-//             printf("Irmão : %d\n",raiz->dir->value);
-//           }
-//           return 1;
-//         }
-//         else
-//         {
-//           return 1 + searchValue(raiz->esq,value);
-//         }
-//       }
-//       else
-//       {
-//         if (raiz->dir->value == value)
-//         {
-//           printf("Pai : %d\n",raiz->value);
-//           if (raiz->esq != NULL)
-//           {
-//             printf("Irmão : %d\n",raiz->esq->value);
-//           }
-//           return 1;
-//         }
-//         else
-//         {
-//           return 1 + searchValue(raiz->dir,value);
-//         }
-//       }
-//     }
-//   }
-//   else
-//   {
-//     printf("Valor não encontrado\n");
-//     return
-//   }
-//
-// }
-////////////////////////////////////////////////////////////////////////////////
+void searchValue(No *raiz,int value)
+{
+  int nivel = 0;
+  No *pai,*irmao;
+  while (raiz->value != value || raiz == NULL)
+  {
+    nivel++;
+    pai = raiz;
+    if (raiz->value < value)
+    {
+      irmao = raiz->esq;
+      raiz = raiz->dir;
+    }
+    else
+    {
+      irmao = raiz->dir;
+      raiz = raiz->esq;
+    }
+  }
+  if (raiz == NULL)
+  {
+    printf("Valor não encontrado\n");
+  }
+  else
+  {
+    printf("Nivel : %d\n",nivel);
+    printf("Pai : %d\n",pai->value);
+    if (irmao != NULL)
+    {
+      printf("Irmão : %d\n",irmao->value);
+    }
+  }
+}

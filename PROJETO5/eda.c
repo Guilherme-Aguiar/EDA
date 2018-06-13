@@ -34,7 +34,7 @@ int main()
         break;
       case '3':
         system("clear");
-        printf("digite o valor que deseja procurar na arvore: \n");
+        printf("Digite o valor que deseja procurar na arvore: \n");
         scanf("%d\n",&valor);
         searchValue(raiz,valor);
         break;
@@ -44,7 +44,7 @@ int main()
         break;
       case '5':
         system("clear");
-        printf("digite o valor que deseja remover da arvore: \n");
+        printf("Digite o valor que deseja remover da arvore: \n");
         scanf("%d\n",&valor);
         raiz =removeValue(raiz,valor);
         break;
@@ -52,7 +52,7 @@ int main()
         do
         {
           system("clear");
-          printf("escolha o algoritmo que deseja utlizar: \n");
+          printf("Escolha o algoritmo que deseja utlizar: \n");
           printf("1 - InOrder: \n");
           printf("2 - PreOrder: \n");
           printf("3 - PostOrder: \n");
@@ -136,12 +136,12 @@ char menu()
     system("clear");
     printf("\n");
     printf("\t1 - Mostrar arvore\n\n");
-    printf("\t2 - verificar se a arvore é cheia\n\n");
-    printf("\t3 - procurar valor na arvore\n\n");
-    printf("\t4 - verificar altura da arvore\n\n");
-    printf("\t5 - remover valor da arvore\n\n");
-    printf("\t6 - mostrar valores da arvore usando algoritmos\n\n");
-    printf("\t7 - balancear arvore\n\n");
+    printf("\t2 - Verificar se a arvore é cheia\n\n");
+    printf("\t3 - Procurar valor na arvore\n\n");
+    printf("\t4 - Verificar altura da arvore\n\n");
+    printf("\t5 - Remover valor da arvore\n\n");
+    printf("\t6 - Mostrar valores da arvore usando algoritmos\n\n");
+    printf("\t7 - Balancear arvore\n\n");
     printf("\t0 - Sair\n\n");
     scanf("%c",&select);
     limpaBuff();
@@ -170,7 +170,7 @@ void limpaBuff()
 void continuar()
 {
   char c;
-  printf("\naperte enter para continuar\n");
+  printf("\nAperte enter para continuar\n");
   do
   {
     c = getchar();
