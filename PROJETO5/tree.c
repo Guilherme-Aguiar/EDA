@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
- // No *loadTreeFromFile(char arquivo[]);
  // void showTree(No *raiz);
 
 void verificaValor(No *raiz,No *pai);
