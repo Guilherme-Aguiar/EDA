@@ -46,7 +46,7 @@ int main()
         system("clear");
         printf("Digite o valor que deseja remover da arvore: \n");
         scanf("%d\n",&valor);
-        raiz =removeValue(raiz,valor);
+        removeValue(raiz,valor);
         break;
       case '6':
         do
@@ -87,7 +87,6 @@ int main()
     }
     continuar();
   } while(select != '0');
-
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////
