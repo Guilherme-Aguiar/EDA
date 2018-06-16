@@ -82,11 +82,12 @@ int main()
         //showTree(raiz);
         break;
       case '0':
-        system("clear");
         liberaArvore(raiz);
-        break;
     }
-    continuar();
+    if (select != '0')
+    {
+      continuar();
+    }
   } while(select != '0');
   return 0;
 }

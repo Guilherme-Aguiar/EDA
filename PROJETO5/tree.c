@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
  // void showTree(No *raiz);
 
@@ -9,11 +10,12 @@ void verificaValor(No *raiz,No *pai);
 void procuraSucessor(No *Raiz);
 int verificaBalanceamento(No *raiz);
 int verificaCheia(No *raiz);
-void rotacionaEsquerda(No *avo,No *pai,No *filho);
-void rotacionaDireita(No *avo,No *pai,No *filho);
+No *rotacionaEsquerda(No *raiz);
+No *rotacionaDireita(No *raiz);
 void setaFamiliaEsq(No *avo,No *pai,No *filho);
 void setaFamiliaDir(No *avo,No *pai,No *filho);
 void insereNo(No *raiz,No *aux);
+int verificaBackbone(No *raiz);
 ////////////////////////////////////////////////////////////////////////////////
 No *loadTreeFromFile(char arquivo[])
 {
@@ -29,8 +31,10 @@ No *loadTreeFromFile(char arquivo[])
   }
   if (!feof(arq))
   {
-    fscanf(arq," %d",&value);
-    printf("hop %d\n",value );
+    fscanf(arq," %d ",&value);
+  }
+  if (!feof(arq))
+  {
     if(raiz = (No*)malloc(sizeof(No)),raiz == NULL)
     {
       printf("alocação falhou!\n");
@@ -41,8 +45,7 @@ No *loadTreeFromFile(char arquivo[])
   }
   while(!feof(arq))
   {
-    fscanf(arq,"%d ",&value);
-    printf("%d\n",value );
+    fscanf(arq," %d ",&value);
     if(aux = (No*)malloc(sizeof(No)),aux == NULL)
     {
       printf("alocação falhou!\n");
@@ -117,99 +120,178 @@ int verificaCheia(No *raiz)
 ////////////////////////////////////////////////////////////////////////////////
 No *balanceTree(No *raiz)
  {
-   No *filho = raiz;
-   No *pai,*avo;
    if (raiz == NULL)
    {
      printf("arvore esta vazia\n");
      return raiz;
    }
-   if(verificaBalanceamento(raiz))
+   if(!verificaBalanceamento(raiz))
    {
      do
      {
-       setaFamiliaDir(avo,pai,filho);
-       rotacionaDireita(avo,pai,filho);
-     }while (avo != NULL);
-     filho = raiz;
+       raiz = rotacionaDireita(raiz);
+       printf("\n" );
+       printPostOrder(raiz);
+       printf("\n" );
+     } while(!verificaBackbone(raiz));
      do
      {
-       setaFamiliaEsq(avo,pai,filho);
-       rotacionaEsquerda(avo,pai,filho);
-       raiz = avo;
-     } while(verificaBalanceamento(raiz));
+       raiz = rotacionaEsquerda(raiz);
+       printf("\n" );
+       printPostOrder(raiz);
+       printf("\n" );
+       getchar();
+     } while(!verificaBalanceamento(raiz));
+   }
+   else
+   {
+     printf("arvore esta balanceada\n");
    }
    return raiz;
  }
 ////////////////////////////////////////////////////////////////////////////////
-void rotacionaEsquerda(No *avo,No *pai,No *filho)
- {
-   avo->esq = filho;
-   filho->esq = pai;
- }
-////////////////////////////////////////////////////////////////////////////////
-void rotacionaDireita(No *avo,No *pai,No *filho)
- {
-   avo->dir = filho;
-   filho->dir = pai;
- }
-////////////////////////////////////////////////////////////////////////////////
-void setaFamiliaEsq(No *avo,No *pai,No *filho)
- {
-   if (filho->dir == NULL)
+int verificaBackbone(No *raiz)
+{
+   if(raiz != NULL)
    {
-     avo = filho;
-     filho = avo->esq;
-     if (filho->dir != NULL)
+     if (raiz->esq != NULL)
      {
-       if (filho->dir->esq == NULL && filho->dir->dir == NULL)
-       {
-         pai = filho;
-         filho = pai->dir;
-       }
-       else
-       {
-         setaFamiliaEsq(avo,pai,filho);
-       }
+       return 0;
      }
      else
      {
-       setaFamiliaEsq(avo,pai,filho);
+       return verificaBackbone(raiz->esq)*verificaBackbone(raiz->dir);
+     }
+   }
+   return 1;
+}
+////////////////////////////////////////////////////////////////////////////////
+No *rotacionaEsquerda(No *raiz)
+{
+   No *filho = raiz;
+   No *pai=filho,*avo;
+   if (filho->esq != NULL)
+   {
+     filho = pai->dir;
+     if (filho != NULL)
+     {
+       raiz = filho;
      }
    }
    else
    {
-     setaFamiliaEsq(avo,pai,filho->esq);
+     if (pai->esq != NULL || pai->dir != NULL)
+     {
+       filho = pai->dir;
+       if (filho != NULL)
+       {
+         raiz = filho;
+       }
+     }
+     else
+     {
+       avo = filho;
+       if (avo->dir != NULL)
+       {
+         pai = avo->dir;
+         if (pai->dir != NULL)
+         {
+           filho = pai->dir;
+         }
+         else
+         {
+           filho = NULL;
+         }
+       }
+       else
+       {
+         filho = NULL;
+       }
+     }
    }
- }
-////////////////////////////////////////////////////////////////////////////////
-void setaFamiliaDir(No *avo,No *pai,No *filho)
- {
-   if (filho->esq == NULL)
+   if (filho != NULL)
    {
-     avo = filho;
-     filho = avo->dir;
+     if (filho == raiz)
+     {
+       pai->dir = filho->esq;
+       filho->esq = pai;
+     }
+     else
+     {
+       avo->dir = filho;
+       pai->dir = filho->esq;
+       filho->esq = pai;
+     }
+   }
+ return raiz;
+}
+////////////////////////////////////////////////////////////////////////////////
+No *rotacionaDireita(No *raiz)
+{
+   No *filho = raiz;
+   No *pai,*avo;
+   do
+   {
      if (filho->esq != NULL)
      {
-       if (filho->esq->esq == NULL && filho->esq->dir == NULL)
+       avo = filho;
+       filho = avo->esq;
+       if(filho->esq != NULL)
        {
+         pai = avo->esq;
+         filho = pai->esq;
+       }
+       while (filho->esq != NULL)
+       {
+         avo = pai;
          pai = filho;
          filho = pai->esq;
        }
-       else
-       {
-         setaFamiliaDir(avo,pai,filho);
-       }
      }
      else
      {
-       setaFamiliaDir(avo,pai,filho);
+       do
+       {
+         avo = filho;
+         filho = avo->dir;
+       } while(filho != NULL && filho->esq == NULL);
+       if (filho != NULL)
+       {
+         pai = filho;
+         filho = pai->esq;
+         while (filho->esq != NULL)
+         {
+           avo = pai;
+           pai = filho;
+           filho = pai->esq;
+         }
+       }
      }
-   }
-   else
-   {
-     setaFamiliaDir(avo,pai,filho->esq);
-   }
+     if (filho != NULL)
+     {
+       if (avo->esq == filho)
+       {
+         avo->esq = filho->dir;
+         filho->dir = avo;
+         puts("trocou");
+         raiz = filho;
+       }
+       else
+       {
+         if (avo->dir == pai)
+         {
+           avo->dir = filho;
+         }
+         else
+         {
+           avo->esq = filho;
+         }
+         pai->esq = filho->dir;
+         filho->dir = pai;
+       }
+     }
+   }while (filho != NULL);
+   return raiz;
  }
 ////////////////////////////////////////////////////////////////////////////////
 void removeValue(No *raiz,int value)
@@ -310,7 +392,6 @@ void searchValue(No *raiz,int value)
     {
       break;
     }
-    printf("raiz %d  %d\n",raiz->value,value);
     nivel++;
     pai = raiz;
     if (raiz->value < value)
@@ -348,6 +429,7 @@ int verificaBalanceamento(No *raiz)
   if (raiz != NULL)
   {
     dif = getHeight(raiz->esq) - getHeight(raiz->dir);
+    printf("raiz %d %d %d\n",raiz->value,getHeight(raiz->esq) , getHeight(raiz->dir));
     if (dif < -1 || dif > 1)
     {
       return 0;
@@ -399,4 +481,29 @@ void verificaValor(No *raiz,No *pai)
       }
     }
   }
+}
+////////////////////////////////////////////////////////////////////////////////
+void showTree(No *raiz){
+  int height = getHeight(raiz);
+  // int matriz[2*height-1][pow(2,height)-1];
+  int **matrixTree = (int **) calloc (2*height-1,sizeof(int*));
+  if(matrixTree == NULL){
+     puts("Alocação Falhou!");
+     exit(1);
+  }
+  for(int i = 0; i < (2*height-1); i++){
+     *(matrixTree+i) = (int*)calloc(pow(2,height)-1,sizeof(int));
+     if(*(matrixTree+i) == NULL){
+        puts("Alocação Falhou!");
+        exit(1);
+     }
+ }
+
+
+
+   for(int i=0; i < 2*height-1; i++)
+      free(*(matrixTree+i));
+
+   free(matrixTree);
+
 }
