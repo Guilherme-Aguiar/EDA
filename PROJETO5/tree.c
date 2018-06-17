@@ -9,9 +9,7 @@ void insereNo(No *raiz,No *aux);
 int verificaCheia(No *raiz);
 
 int verificaBalanceamento(No *raiz);
-No *rotacionaEsquerda(No *raiz,No *pai,No *raizReal);
-No *rotacionaDireita(No *raiz);
-int verificaBackbone(No *raiz);
+No *rotaciona(No *raiz,No *pai,No *raizReal);
 No *rodaEsq(No *raiz,No *pai,No *raizReal);
 No *rodaDir(No *raiz,No *pai,No *raizReal);
 
@@ -134,13 +132,9 @@ No *balanceTree(No *raiz)
    }
    if(!verificaBalanceamento(raiz))
    {
-     // do
-     // {
-     //   raiz = rotacionaDireita(raiz);
-     // } while(!verificaBackbone(raiz));
      do
      {
-       raiz = rotacionaEsquerda(raiz,NULL,raiz);
+       raiz = rotaciona(raiz,NULL,raiz);
      } while(!verificaBalanceamento(raiz));
    }
    else
@@ -149,22 +143,6 @@ No *balanceTree(No *raiz)
    }
    return raiz;
  }
-////////////////////////////////////////////////////////////////////////////////
-int verificaBackbone(No *raiz)
-{
-   if(raiz != NULL)
-   {
-     if (raiz->esq != NULL)
-     {
-       return 0;
-     }
-     else
-     {
-       return verificaBackbone(raiz->esq)*verificaBackbone(raiz->dir);
-     }
-   }
-   return 1;
-}
 ////////////////////////////////////////////////////////////////////////////////
 No *rodaDir(No *raiz,No *pai,No *raizReal)
 {
@@ -217,18 +195,18 @@ No *rodaEsq(No *raiz,No *pai,No *raizReal)
   return raizReal;
 }
 ////////////////////////////////////////////////////////////////////////////////
-No *rotacionaEsquerda(No *raiz,No *pai,No *raizReal)
+No *rotaciona(No *raiz,No *pai,No *raizReal)
 {
   if (raiz != NULL)
   {
     if (!verificaBalanceamento(raiz))
     {
-      raizReal = rotacionaEsquerda(raiz->esq,raiz,raizReal);
+      raizReal = rotaciona(raiz->esq,raiz,raizReal);
       if (verificaBalanceamento(raiz))
       {
         return raizReal;
       }
-      raizReal = rotacionaEsquerda(raiz->dir,raiz,raizReal);
+      raizReal = rotaciona(raiz->dir,raiz,raizReal);
       if (verificaBalanceamento(raiz))
       {
         return raizReal;
@@ -245,73 +223,6 @@ No *rotacionaEsquerda(No *raiz,No *pai,No *raizReal)
   }
   return raizReal;
 }
-////////////////////////////////////////////////////////////////////////////////
-No *rotacionaDireita(No *raiz)
-{
-   No *filho = raiz;
-   No *pai,*avo;
-   do
-   {
-     if (filho->esq != NULL)
-     {
-       avo = filho;
-       filho = avo->esq;
-       if(filho->esq != NULL)
-       {
-         pai = avo->esq;
-         filho = pai->esq;
-       }
-       while (filho->esq != NULL)
-       {
-         avo = pai;
-         pai = filho;
-         filho = pai->esq;
-       }
-     }
-     else
-     {
-       do
-       {
-         avo = filho;
-         filho = avo->dir;
-       } while(filho != NULL && filho->esq == NULL);
-       if (filho != NULL)
-       {
-         pai = filho;
-         filho = pai->esq;
-         while (filho->esq != NULL)
-         {
-           avo = pai;
-           pai = filho;
-           filho = pai->esq;
-         }
-       }
-     }
-     if (filho != NULL)
-     {
-       if (avo->esq == filho)
-       {
-         avo->esq = filho->dir;
-         filho->dir = avo;
-         raiz = filho;
-       }
-       else
-       {
-         if (avo->dir == pai)
-         {
-           avo->dir = filho;
-         }
-         else
-         {
-           avo->esq = filho;
-         }
-         pai->esq = filho->dir;
-         filho->dir = pai;
-       }
-     }
-   }while (filho != NULL);
-   return raiz;
- }
  ////////////////////////////////////////////////////////////////////////////////
  int verificaBalanceamento(No *raiz)
  {
