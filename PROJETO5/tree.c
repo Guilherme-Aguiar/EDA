@@ -134,10 +134,10 @@ No *balanceTree(No *raiz)
    }
    if(!verificaBalanceamento(raiz))
    {
-     do
-     {
-       raiz = rotacionaDireita(raiz);
-     } while(!verificaBackbone(raiz));
+     // do
+     // {
+     //   raiz = rotacionaDireita(raiz);
+     // } while(!verificaBackbone(raiz));
      do
      {
        raiz = rotacionaEsquerda(raiz,NULL,raiz);
@@ -179,9 +179,8 @@ No *rodaDir(No *raiz,No *pai,No *raizReal)
     {
       pai->dir = aux;
     }
-    raiz->esq = aux->esq;
+    raiz->dir = aux->esq;
     aux->esq = raiz;
-    raiz->dir = NULL;
   }
   else
   {
@@ -201,12 +200,13 @@ No *rodaEsq(No *raiz,No *pai,No *raizReal)
     if (pai->esq == raiz)
     {
       pai->esq = aux;
-    } else {
+    }
+    else
+    {
       pai->dir = aux;
     }
-    raiz->dir = aux->dir;
+    raiz->esq = aux->dir;
     aux->dir = raiz;
-    raiz->esq = NULL;
   }
   else
   {
@@ -368,6 +368,7 @@ No *removeValue(No *raiz,int value)
       free(aux);
     }
     printf("\nValor removido\n\n");
+    showTree(raiz);
   }
   return raiz;
 }
@@ -576,6 +577,10 @@ void searchValue(No *raiz,int value)
 ////////////////////////////////////////////////////////////////////////////////
 void showTree(No *raiz)
 {
+  if (raiz == NULL)
+  {
+    return;
+  }
   int height = getHeight(raiz);
   int **matrixTree = (int **) calloc (height,sizeof(int*));
   if(matrixTree == NULL)
@@ -635,7 +640,18 @@ void showTree(No *raiz)
   {
     for (int j = 0; j < pow(2,height)-1; j++)
     {
-      printf("%c",matrixTreeChar[i][j]);
+      if (matrixTreeChar[i][j] == '/' || matrixTreeChar[i][j] == '\\')
+      {
+        for(int aux = matrixTree[i+1][j]/10; aux != 0; aux = aux/10)
+        {
+          printf(" ");
+        }
+        printf("%c",matrixTreeChar[i][j]);
+      }
+      else
+      {
+        printf(" ");
+      }
     }
     printf("\n");
 

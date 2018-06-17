@@ -50,7 +50,6 @@ int main()
         scanf("%d",&valor);
         getchar();
         raiz = removeValue(raiz,valor);
-        showTree(raiz);
         break;
       case '6':
         do
@@ -119,6 +118,7 @@ No *selecionaArquivo()
   {
     printf("Digite o nome do seu arquivo (não é necessário digitar o tipo do arquivo): \n");
     scanf("%s",nomeArquivo);
+    limpaBuff();
     strcat(nomeArquivo,".txt");
     raiz = loadTreeFromFile(nomeArquivo);
   }
@@ -139,17 +139,18 @@ char menu()
   {
     system("clear");
     printf("\n");
-    printf("\t1 - Mostrar arvore(ok)\n\n");
-    printf("\t2 - Verificar se a arvore é cheia(ok)\n\n");
-    printf("\t3 - Procurar valor na arvore(ok)\n\n");
-    printf("\t4 - Verificar altura da arvore(ok)\n\n");
-    printf("\t5 - Remover valor da arvore(ok)\n\n");
-    printf("\t6 - Mostrar valores da arvore usando algoritmos(ok)\n\n");
+    printf("\t1 - Mostrar arvore\n\n");
+    printf("\t2 - Verificar se a arvore é cheia\n\n");
+    printf("\t3 - Procurar valor na arvore\n\n");
+    printf("\t4 - Verificar altura da arvore\n\n");
+    printf("\t5 - Remover valor da arvore\n\n");
+    printf("\t6 - Mostrar valores da arvore usando algoritmos\n\n");
     printf("\t7 - Balancear arvore\n\n");
     printf("\t0 - Sair\n\n");
     scanf("%c",&select);
     limpaBuff();
   } while(select < '0' || select > '7');
+  return select;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void liberaArvore(No *raiz)
