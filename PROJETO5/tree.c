@@ -4,18 +4,22 @@
 #include <stdlib.h>
 #include <math.h>
 
- // void showTree(No *raiz);
-
-void verificaValor(No *raiz,No *pai);
-void procuraSucessor(No *Raiz);
-int verificaBalanceamento(No *raiz);
-int verificaCheia(No *raiz);
-No *rotacionaEsquerda(No *raiz);
-No *rotacionaDireita(No *raiz);
-void setaFamiliaEsq(No *avo,No *pai,No *filho);
-void setaFamiliaDir(No *avo,No *pai,No *filho);
 void insereNo(No *raiz,No *aux);
+
+int verificaCheia(No *raiz);
+
+int verificaBalanceamento(No *raiz);
+No *rotacionaEsquerda(No *raiz,No *pai,No *raizReal);
+No *rotacionaDireita(No *raiz);
 int verificaBackbone(No *raiz);
+No *rodaEsq(No *raiz,No *pai,No *raizReal);
+No *rodaDir(No *raiz,No *pai,No *raizReal);
+
+No *removeRaiz(No *raiz);
+No *verificaValor(No *raiz,No *pai);
+No *procuraSucessor(No *Raiz);
+
+void encheMatriz(int **matrixTree,char **matrixTreeChar,No *raiz,int altura,int nivel,int coluna);
 ////////////////////////////////////////////////////////////////////////////////
 No *loadTreeFromFile(char arquivo[])
 {
@@ -23,7 +27,6 @@ No *loadTreeFromFile(char arquivo[])
   int value;
   No *aux;
   No *raiz = NULL;
-  printf("arq %s\n",arquivo );
   if(arq = fopen(arquivo,"a+"),arq == NULL)
   {
     printf("erro ao abrir o arquivo!\n");
@@ -85,6 +88,8 @@ void insereNo(No *raiz,No *aux)
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 void isFull(No *raiz)
  {
    if (raiz == NULL)
@@ -117,6 +122,8 @@ int verificaCheia(No *raiz)
    }
    return 1;
  }
+ ////////////////////////////////////////////////////////////////////////////////
+ ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 No *balanceTree(No *raiz)
  {
@@ -130,17 +137,10 @@ No *balanceTree(No *raiz)
      do
      {
        raiz = rotacionaDireita(raiz);
-       printf("\n" );
-       printPostOrder(raiz);
-       printf("\n" );
      } while(!verificaBackbone(raiz));
      do
      {
-       raiz = rotacionaEsquerda(raiz);
-       printf("\n" );
-       printPostOrder(raiz);
-       printf("\n" );
-       getchar();
+       raiz = rotacionaEsquerda(raiz,NULL,raiz);
      } while(!verificaBalanceamento(raiz));
    }
    else
@@ -166,64 +166,84 @@ int verificaBackbone(No *raiz)
    return 1;
 }
 ////////////////////////////////////////////////////////////////////////////////
-No *rotacionaEsquerda(No *raiz)
+No *rodaDir(No *raiz,No *pai,No *raizReal)
 {
-   No *filho = raiz;
-   No *pai=filho,*avo;
-   if (filho->esq != NULL)
-   {
-     filho = pai->dir;
-     if (filho != NULL)
-     {
-       raiz = filho;
-     }
-   }
-   else
-   {
-     if (pai->esq != NULL || pai->dir != NULL)
-     {
-       filho = pai->dir;
-       if (filho != NULL)
-       {
-         raiz = filho;
-       }
-     }
-     else
-     {
-       avo = filho;
-       if (avo->dir != NULL)
-       {
-         pai = avo->dir;
-         if (pai->dir != NULL)
-         {
-           filho = pai->dir;
-         }
-         else
-         {
-           filho = NULL;
-         }
-       }
-       else
-       {
-         filho = NULL;
-       }
-     }
-   }
-   if (filho != NULL)
-   {
-     if (filho == raiz)
-     {
-       pai->dir = filho->esq;
-       filho->esq = pai;
-     }
-     else
-     {
-       avo->dir = filho;
-       pai->dir = filho->esq;
-       filho->esq = pai;
-     }
-   }
- return raiz;
+  No *aux = raiz->dir;
+  if (pai != NULL)
+  {
+    if (pai->esq == raiz)
+    {
+      pai->esq = aux;
+    }
+    else
+    {
+      pai->dir = aux;
+    }
+    raiz->esq = aux->esq;
+    aux->esq = raiz;
+    raiz->dir = NULL;
+  }
+  else
+  {
+    raiz->dir = aux->esq;
+    aux->esq = raiz;
+    raizReal = aux;
+  }
+
+  return raizReal;
+}
+////////////////////////////////////////////////////////////////////////////////
+No *rodaEsq(No *raiz,No *pai,No *raizReal)
+{
+  No *aux = raiz->esq;
+  if (pai != NULL)
+  {
+    if (pai->esq == raiz)
+    {
+      pai->esq = aux;
+    } else {
+      pai->dir = aux;
+    }
+    raiz->dir = aux->dir;
+    aux->dir = raiz;
+    raiz->esq = NULL;
+  }
+  else
+  {
+    raiz->esq = aux->dir;
+    aux->dir = raiz;
+    raizReal = aux;
+  }
+  return raizReal;
+}
+////////////////////////////////////////////////////////////////////////////////
+No *rotacionaEsquerda(No *raiz,No *pai,No *raizReal)
+{
+  if (raiz != NULL)
+  {
+    if (!verificaBalanceamento(raiz))
+    {
+      raizReal = rotacionaEsquerda(raiz->esq,raiz,raizReal);
+      if (verificaBalanceamento(raiz))
+      {
+        return raizReal;
+      }
+      raizReal = rotacionaEsquerda(raiz->dir,raiz,raizReal);
+      if (verificaBalanceamento(raiz))
+      {
+        return raizReal;
+      }
+      if (getHeight(raiz->esq) > getHeight(raiz->dir))
+      {
+        raizReal = rodaEsq(raiz,pai,raizReal);
+      }
+      else
+      {
+        raizReal = rodaDir(raiz,pai,raizReal);
+      }
+    }
+  }
+  return raizReal;
 }
 ////////////////////////////////////////////////////////////////////////////////
 No *rotacionaDireita(No *raiz)
@@ -273,7 +293,6 @@ No *rotacionaDireita(No *raiz)
        {
          avo->esq = filho->dir;
          filho->dir = avo;
-         puts("trocou");
          raiz = filho;
        }
        else
@@ -293,48 +312,170 @@ No *rotacionaDireita(No *raiz)
    }while (filho != NULL);
    return raiz;
  }
+ ////////////////////////////////////////////////////////////////////////////////
+ int verificaBalanceamento(No *raiz)
+ {
+   int dif;
+   if (raiz != NULL)
+   {
+     dif = getHeight(raiz->esq) - getHeight(raiz->dir);
+     if (dif < -1 || dif > 1)
+     {
+       return 0;
+     }
+     else
+     {
+       return verificaBalanceamento(raiz->esq)*verificaBalanceamento(raiz->dir);
+     }
+   }
+   return 1;
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+ ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-void removeValue(No *raiz,int value)
+No *removeValue(No *raiz,int value)
 {
-  No *pai;
-  while (raiz == NULL)
+  No *pai=NULL,*aux=raiz;
+  while (aux != NULL)
   {
-    if (raiz->value != value)
+    if (aux->value == value)
     {
       break;
     }
-    pai = raiz;
-    if (raiz->value < value)
+    pai = aux;
+    if (aux->value < value)
     {
-      raiz = raiz->dir;
+      aux = pai->dir;
     }
     else
     {
-      raiz = raiz->esq;
+      aux = pai->esq;
     }
   }
-  if (raiz == NULL)
+  if (aux == NULL)
   {
     printf("Valor não encontrado\n");
   }
   else
   {
-    verificaValor(raiz,pai);
+    if (pai == NULL)
+    {
+      raiz = removeRaiz(raiz);
+    }
+    else
+    {
+      aux = verificaValor(aux,pai);
+      free(aux);
+    }
+    printf("\nValor removido\n\n");
+  }
+  return raiz;
+}
+////////////////////////////////////////////////////////////////////////////////
+No *removeRaiz(No *raiz)
+{
+  No *aux;
+  if (raiz->dir != NULL || raiz->esq != NULL)
+  {
+    if (raiz->dir != NULL && raiz->esq != NULL)
+    {
+      aux = procuraSucessor(raiz);
+      free(aux);
+      return raiz;
+    }
+    else
+    {
+      if (raiz->dir != NULL)
+      {
+        aux = raiz->dir;
+        free(raiz);
+        return aux;
+      }
+      else
+      {
+        aux = raiz->esq;
+        free(raiz);
+        return aux;
+      }
+    }
+  }
+  else
+  {
+    free(raiz);
+    return NULL;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void procuraSucessor(No *raiz)
+No *verificaValor(No *raiz,No *pai)
 {
-    No *sucessor,*pai;
+  if (raiz->dir != NULL || raiz->esq != NULL)
+  {
+    if (raiz->dir != NULL && raiz->esq != NULL)
+    {
+      return procuraSucessor(raiz);
+    }
+    else
+    {
+      if (raiz->dir != NULL)
+      {
+        if (pai->dir == raiz)
+        {
+          pai->dir = raiz->dir;
+          return raiz;
+        }
+        else
+        {
+          pai->esq = raiz->dir;
+          return raiz;
+        }
+      }
+      else
+      {
+        if (pai->dir == raiz)
+        {
+          pai->dir = raiz->esq;
+          return raiz;
+        }
+        else
+        {
+          pai->esq = raiz->esq;
+          return raiz;
+        }
+      }
+    }
+  }
+  else
+  {
+    if (pai->value < raiz->value)
+    {
+      pai->dir = NULL;
+    }
+    else
+    {
+      pai->esq = NULL;
+    }
+    return raiz;
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+No *procuraSucessor(No *raiz)
+{
+    No *sucessor,*pai,*aux;
+    int value;
     sucessor = raiz->dir;
+    pai = raiz;
     while (sucessor->esq != NULL)
     {
       pai = sucessor;
-      sucessor = sucessor->esq;
+      sucessor = pai->esq;
     }
-    raiz->value = sucessor->value;
-    verificaValor(sucessor,pai);
+    value = sucessor->value;
+    aux = verificaValor(sucessor,pai);
+    raiz->value = value;
+    return aux;
 }
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 int getHeight(No *raiz)
 {
@@ -352,6 +493,8 @@ int getHeight(No *raiz)
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 void printPostOrder(No *raiz)
  {
    if (raiz != NULL)
@@ -361,6 +504,8 @@ void printPostOrder(No *raiz)
      printf("%d ",raiz->value);
    }
  }
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 void printPreOrder(No *raiz)
  {
@@ -372,6 +517,8 @@ void printPreOrder(No *raiz)
    }
  }
 ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 void printInOrder(No *raiz)
  {
    if (raiz != NULL)
@@ -382,9 +529,11 @@ void printInOrder(No *raiz)
    }
  }
 ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 void searchValue(No *raiz,int value)
 {
-  int nivel = 0;
+  int nivel = 1;
   No *pai=NULL,*irmao=NULL;
   while (raiz != NULL)
   {
@@ -423,87 +572,112 @@ void searchValue(No *raiz,int value)
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-int verificaBalanceamento(No *raiz)
-{
-  int dif;
-  if (raiz != NULL)
-  {
-    dif = getHeight(raiz->esq) - getHeight(raiz->dir);
-    printf("raiz %d %d %d\n",raiz->value,getHeight(raiz->esq) , getHeight(raiz->dir));
-    if (dif < -1 || dif > 1)
-    {
-      return 0;
-    }
-    else
-    {
-      return verificaBalanceamento(raiz->esq)*verificaBalanceamento(raiz->dir);
-    }
-  }
-  return 1;
-}
 ////////////////////////////////////////////////////////////////////////////////
-void verificaValor(No *raiz,No *pai)
-{
-  if (raiz->dir != NULL || raiz->esq != NULL)
-  {
-    if (raiz->dir != NULL && raiz->esq != NULL)
-    {
-      procuraSucessor(raiz);
-      free(raiz);
-    }
-    else
-    {
-      if (raiz->dir == NULL)
-      {
-        if (pai->dir == raiz)
-        {
-          pai->dir = raiz->esq;
-          free(raiz);
-        }
-        else
-        {
-          pai->esq = raiz->esq;
-          free(raiz);
-        }
-      }
-      else
-      {
-        if (pai->dir == raiz)
-        {
-          pai->dir = raiz->dir;
-          free(raiz);
-        }
-        else
-        {
-          pai->esq = raiz->dir;
-          free(raiz);
-        }
-      }
-    }
-  }
-}
 ////////////////////////////////////////////////////////////////////////////////
-void showTree(No *raiz){
+void showTree(No *raiz)
+{
   int height = getHeight(raiz);
-  // int matriz[2*height-1][pow(2,height)-1];
-  int **matrixTree = (int **) calloc (2*height-1,sizeof(int*));
-  if(matrixTree == NULL){
+  int **matrixTree = (int **) calloc (height,sizeof(int*));
+  if(matrixTree == NULL)
+  {
      puts("Alocação Falhou!");
      exit(1);
   }
-  for(int i = 0; i < (2*height-1); i++){
+  for(int i = 0; i < (height); i++)
+  {
      *(matrixTree+i) = (int*)calloc(pow(2,height)-1,sizeof(int));
-     if(*(matrixTree+i) == NULL){
+     if(*(matrixTree+i) == NULL)
+     {
         puts("Alocação Falhou!");
         exit(1);
      }
- }
+  }
 
+  char **matrixTreeChar = (char **) calloc (height-1,sizeof(char*));
+  if(matrixTreeChar == NULL)
+  {
+     puts("Alocação Falhou!");
+     exit(1);
+  }
+  for(int i = 0; i < (height-1); i++)
+  {
+     *(matrixTreeChar+i) = (char*)calloc(pow(2,height)-1,sizeof(char));
+     if(*(matrixTreeChar+i) == NULL)
+     {
+        puts("Alocação Falhou!");
+        exit(1);
+     }
+  }
 
+  for (int i = 0; i < height-1; i++)
+  {
+    for (int j = 0; j < pow(2,height)-1; j++)
+    {
+      matrixTreeChar[i][j] = ' ';
+    }
+  }
 
-   for(int i=0; i < 2*height-1; i++)
+  encheMatriz(matrixTree,matrixTreeChar,raiz,height,0,(pow(2,height)-1)/2);
+
+  for (int j = 0; j < pow(2,height)-1; j++)
+  {
+    if (j != (int)(pow(2,height)-1)/2)
+    {
+      printf(" ");
+    }
+    else
+    {
+      printf("%d",matrixTree[0][j]);
+    }
+  }
+  printf("\n");
+  for (int i = 0; i < height-1; i++)
+  {
+    for (int j = 0; j < pow(2,height)-1; j++)
+    {
+      printf("%c",matrixTreeChar[i][j]);
+    }
+    printf("\n");
+
+    for (int j = 0; j < pow(2,height)-1; j++)
+    {
+      if (matrixTreeChar[i][j] == '/' || matrixTreeChar[i][j] == '\\')
+      {
+        printf("%d",matrixTree[i+1][j]);
+      }
+      else
+      {
+        printf("%c",matrixTreeChar[i][j]);
+      }
+    }
+    printf("\n");
+  }
+
+   for(int i=0; i < height; i++)
       free(*(matrixTree+i));
 
    free(matrixTree);
 
+   for(int i=0; i < height-1; i++)
+      free(*(matrixTreeChar+i));
+
+   free(matrixTreeChar);
+
+}
+////////////////////////////////////////////////////////////////////////////////
+void encheMatriz(int **matrixTree,char **matrixTreeChar,No *raiz,int altura,int linha,int coluna)
+{
+  int aux = pow(2,altura-2-linha);
+  *(*(matrixTree+linha)+coluna) = raiz->value;
+  if (raiz->esq != NULL)
+  {
+    *(*(matrixTreeChar+linha)+coluna-aux) = '/';
+    encheMatriz(matrixTree,matrixTreeChar,raiz->esq,altura,linha+1,coluna-aux);
+
+  }
+  if (raiz->dir != NULL)
+  {
+    *(*(matrixTreeChar+linha)+coluna+aux) = '\\';
+    encheMatriz(matrixTree,matrixTreeChar,raiz->dir,altura,linha+1,coluna+aux);
+  }
 }

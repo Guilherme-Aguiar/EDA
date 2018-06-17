@@ -24,7 +24,7 @@ int main()
     {
       case '1':
         system("clear");
-        //showTree(raiz);
+        showTree(raiz);
         break;
       case '2':
         system("clear");
@@ -33,6 +33,7 @@ int main()
       case '3':
         system("clear");
         printf("Digite o valor que deseja procurar na arvore: \n");
+        showTree(raiz);
         scanf("%d",&valor);
         getchar();
         printf("%d\n",valor);
@@ -45,9 +46,11 @@ int main()
       case '5':
         system("clear");
         printf("Digite o valor que deseja remover da arvore: \n");
-        scanf("%d\n",&valor);
+        showTree(raiz);
+        scanf("%d",&valor);
         getchar();
-        removeValue(raiz,valor);
+        raiz = removeValue(raiz,valor);
+        showTree(raiz);
         break;
       case '6':
         do
@@ -79,7 +82,7 @@ int main()
       case '7':
         system("clear");
         raiz = balanceTree(raiz);
-        //showTree(raiz);
+        showTree(raiz);
         break;
       case '0':
         liberaArvore(raiz);
@@ -123,7 +126,6 @@ No *selecionaArquivo()
   {
     strcat(nomeArquivo,"BSTs/bst");
     nomeArquivo[strlen(nomeArquivo)] = arquivo;
-    //strcat(nomeArquivo,arquivo);
     strcat(nomeArquivo,".txt");
     raiz = loadTreeFromFile(nomeArquivo);
   }
@@ -137,11 +139,11 @@ char menu()
   {
     system("clear");
     printf("\n");
-    printf("\t1 - Mostrar arvore\n\n");
+    printf("\t1 - Mostrar arvore(ok)\n\n");
     printf("\t2 - Verificar se a arvore é cheia(ok)\n\n");
     printf("\t3 - Procurar valor na arvore(ok)\n\n");
     printf("\t4 - Verificar altura da arvore(ok)\n\n");
-    printf("\t5 - Remover valor da arvore\n\n");
+    printf("\t5 - Remover valor da arvore(ok)\n\n");
     printf("\t6 - Mostrar valores da arvore usando algoritmos(ok)\n\n");
     printf("\t7 - Balancear arvore\n\n");
     printf("\t0 - Sair\n\n");

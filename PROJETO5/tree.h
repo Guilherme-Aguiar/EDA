@@ -8,11 +8,11 @@ typedef struct no {
 } No;
 
 No *loadTreeFromFile(char arquivo[]);
-// void showTree(No *raiz);
+void showTree(No *raiz);
 void isFull(No *raiz);
 void searchValue(No *raiz,int value);
 int getHeight(No *raiz);
-void removeValue(No *raiz,int value);
+No *removeValue(No *raiz,int value);
 void printInOrder(No *raiz);
 void printPreOrder(No *raiz);
 void printPostOrder(No *raiz);
