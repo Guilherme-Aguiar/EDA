@@ -18,6 +18,7 @@ No *verificaValor(No *raiz,No *pai);
 No *procuraSucessor(No *Raiz);
 
 void encheMatriz(int **matrixTree,char **matrixTreeChar,No *raiz,int altura,int nivel,int coluna);
+void mostraMatriz(int **matrixTree,char **matrixTreeChar,int height);
 ////////////////////////////////////////////////////////////////////////////////
 No *loadTreeFromFile(char arquivo[])
 {
@@ -535,50 +536,8 @@ void showTree(No *raiz)
 
   encheMatriz(matrixTree,matrixTreeChar,raiz,height,0,(pow(2,height)-1)/2);
 
-  for (int j = 0; j < pow(2,height)-1; j++)
-  {
-    if (j != (int)(pow(2,height)-1)/2)
-    {
-      printf(" ");
-    }
-    else
-    {
-      printf("%d",matrixTree[0][j]);
-    }
-  }
-  printf("\n");
-  for (int i = 0; i < height-1; i++)
-  {
-    for (int j = 0; j < pow(2,height)-1; j++)
-    {
-      if (matrixTreeChar[i][j] == '/' || matrixTreeChar[i][j] == '\\')
-      {
-        for(int aux = matrixTree[i+1][j]/10; aux != 0; aux = aux/10)
-        {
-          printf(" ");
-        }
-        printf("%c",matrixTreeChar[i][j]);
-      }
-      else
-      {
-        printf(" ");
-      }
-    }
-    printf("\n");
+  mostraMatriz(matrixTree,matrixTreeChar,height);
 
-    for (int j = 0; j < pow(2,height)-1; j++)
-    {
-      if (matrixTreeChar[i][j] == '/' || matrixTreeChar[i][j] == '\\')
-      {
-        printf("%d",matrixTree[i+1][j]);
-      }
-      else
-      {
-        printf("%c",matrixTreeChar[i][j]);
-      }
-    }
-    printf("\n");
-  }
 
    for(int i=0; i < height; i++)
       free(*(matrixTree+i));
@@ -607,4 +566,55 @@ void encheMatriz(int **matrixTree,char **matrixTreeChar,No *raiz,int altura,int 
     *(*(matrixTreeChar+linha)+coluna+aux) = '\\';
     encheMatriz(matrixTree,matrixTreeChar,raiz->dir,altura,linha+1,coluna+aux);
   }
+}
+////////////////////////////////////////////////////////////////////////////////
+void mostraMatriz(int **matrixTree,char **matrixTreeChar,int height)
+{
+  printf("| ");
+  for (int j = 0; j < pow(2,height)-1; j++)
+  {
+    if (j != (int)(pow(2,height)-1)/2)
+    {
+      printf(" ");
+    }
+    else
+    {
+      printf("%d",matrixTree[0][j]);
+    }
+  }
+  printf(" |\n");
+  for (int i = 0; i < height-1; i++)
+  {
+    printf("| ");
+    for (int j = 0; j < pow(2,height)-1; j++)
+    {
+      if (matrixTreeChar[i][j] == '/' || matrixTreeChar[i][j] == '\\')
+      {
+        for(int aux = matrixTree[i+1][j]/10; aux != 0; aux = aux/10)
+        {
+          printf(" ");
+        }
+        printf("%c",matrixTreeChar[i][j]);
+      }
+      else
+      {
+        printf(" ");
+      }
+    }
+    printf(" |\n");
+    printf("| ");
+    for (int j = 0; j < pow(2,height)-1; j++)
+    {
+      if (matrixTreeChar[i][j] == '/' || matrixTreeChar[i][j] == '\\')
+      {
+        printf("%d",matrixTree[i+1][j]);
+      }
+      else
+      {
+        printf("%c",matrixTreeChar[i][j]);
+      }
+    }
+    printf(" |\n");
+  }
+
 }
