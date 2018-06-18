@@ -596,7 +596,7 @@ void encheMatriz(int **matrixTree,char **matrixTreeChar,No *raiz,int altura,int 
 ////////////////////////////////////////////////////////////////////////////////
 void mostraMatriz(int **matrixTree,char **matrixTreeChar,int height,int *retira)
 {
-  printf("|+| ");
+  printf("  ");
   for (int j = 0; j < pow(2,height)-1 ; j++)
   {
     if (retira[j])
@@ -611,10 +611,10 @@ void mostraMatriz(int **matrixTree,char **matrixTreeChar,int height,int *retira)
       }
     }
   }
-  printf(" |+|\n");
+  printf("  \n");
   for (int i = 0; i < height-1; i++)
   {
-    printf("|+| ");
+    printf("  ");
     for (int j = 0; (j < pow(2,height)-1) ; j++)
     {
       if (retira[j])
@@ -633,8 +633,8 @@ void mostraMatriz(int **matrixTree,char **matrixTreeChar,int height,int *retira)
         }
       }
     }
-    printf(" |+|\n");
-    printf("|+| ");
+    printf("  \n");
+    printf("  ");
     for (int j = 0; j < pow(2,height)-1 ; j++)
     {
       if (retira[j])
@@ -649,6 +649,6 @@ void mostraMatriz(int **matrixTree,char **matrixTreeChar,int height,int *retira)
         }
       }
     }
-    printf(" |+|\n");
+    printf("  \n");
   }
 }
