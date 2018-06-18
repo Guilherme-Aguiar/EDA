@@ -35,7 +35,6 @@ int main()
         showTree(raiz);
         scanf("%d",&valor);
         getchar();
-        printf("%d\n",valor);
         searchValue(raiz,valor);
         break;
       case '4':
